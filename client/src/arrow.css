@@ -1,0 +1,25 @@
+/* arrow.css */
+.arrow-button {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute; /* Position the arrows relative to the container */
+    top: 50%; /* Adjust the vertical position as needed */
+    opacity: 1;
+    user-select: none;
+    transform: translateY(-50%);
+  }
+  
+  .left-arrow {
+    left: 10px; /* Adjust the horizontal position of the left arrow */
+  }
+  
+  .right-arrow {
+    right: 10px; /* Adjust the horizontal position of the right arrow */
+  }
+  
+  .disabled {
+    opacity: 0;
+  }
+  

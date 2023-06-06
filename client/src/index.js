@@ -9,6 +9,8 @@ import '@fontsource/roboto/700.css';
 import App from './App';
 import Login from "./Login";
 import Movie from "./Movie";
+import User from "./User";
+import Register from "./Register";
 
 
 ReactDOM.render(

@@ -4,22 +4,36 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const Login = ({ hideTopBar }) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Dummy authentication logic
-    if (email === 'dummy@example.com' && password === 'password') {
-      alert('Login successful');
-      navigate('/app'); // Navigate to the desired page (App.js)
-    } else {
-      alert('Invalid email or password');
+    try {
+      const data = {username, password};
+
+      const response = await fetch('http://localhost:3001/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        alert('Login successful');
+        navigate('/app'); // Navigate to the desired page (App.js)
+      } else {
+        alert('Invalid email or password');
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
     }
+
   };
 
+  
   return (
     <div className="loginpage">
       {!hideTopBar && (
@@ -32,8 +46,8 @@ const Login = ({ hideTopBar }) => {
             <input
               required
               type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
             <label>Email</label>
           </div>
@@ -55,7 +69,7 @@ const Login = ({ hideTopBar }) => {
           </button>
         </form>
         <p>
-          Don't have an account? <a href="/app" className="a2">Sign up!</a>
+          Don't have an account? <a href="/register" className="a2">Sign up!</a>
         </p>
       </div>
     </div>

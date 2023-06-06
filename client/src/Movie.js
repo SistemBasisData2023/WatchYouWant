@@ -36,6 +36,26 @@ const Movie = () => {
   }, [id]);
 
   useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const creditsUrl = `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}`;
+        const response = await fetch(creditsUrl);
+        const data = await response.json();
+        setMovieDetails(prevDetails => ({
+          ...prevDetails,
+          credits: data,
+        }));
+      } catch (error) {
+        console.error('Error fetching credits:', error);
+      }
+    };
+  
+    if (movieDetails) {
+      fetchCredits();
+    }
+  }, [id, movieDetails]);
+
+  useEffect(() => {
     const fetchVideos = async () => {
       try {
         const videosUrl = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`;
@@ -57,7 +77,7 @@ const Movie = () => {
   }, [id, movieDetails]);
 
   return (
-    <div className="movie-title">
+    <div className="movie-container">
       {movieDetails ? (
         <>
           <div className="movie-header">
@@ -82,19 +102,21 @@ const Movie = () => {
             </div>
           </div>
           <div className="movie-details">
-          <h3>Movie Overview</h3>
-          <p className="movie-overview">{movieDetails.overview}</p>
+            <h3>Movie Overview</h3>
+            <p className="movie-comp">{movieDetails.overview}</p>
 
-          <div className="additional-details">
-            <h3>Additional Details</h3>
-            <ul>
-              <li><strong>Release Date:</strong> {movieDetails.release_date}</li>
-              <li><strong>Cast:</strong> {movieDetails.credits?.cast.map(cast => cast.name).join(", ")}</li>
-              {/* Add more additional details as needed */}
-            </ul>
+            <div className="additional-details">
+              <h3>Release Date</h3>
+              <p className="movie-comp">{movieDetails.release_date}</p>
+
+              <h3>Cast</h3>
+              <ul className="movie-comp">
+                {movieDetails.credits?.cast.map((cast) => (
+                  <li key={cast.id}>{cast.name}</li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
-
       </>
       ) : (
         <p>Loading...</p>

@@ -4,6 +4,8 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const notifier = require('node-notifier');
 const axios = require('axios');
+const cors = require('cors');
+
 
 const API_KEY = '7c020dc3c50fdb639f81999630743ff1';
  
@@ -51,7 +53,10 @@ app.use(
         extended: true
     })
 );
-
+app.use(cors({
+    origin: 'http://localhost:3000',
+  })
+);
 var temp;
  
 //ROUTERS
@@ -75,18 +80,31 @@ router.post('/login', (req, res) => {
     temp = req.session;
     temp.username = username;
     temp.password = password;
-    const query = `SELECT FROM users where username = '${temp.username}'`; //query ambil data user untuk login
-
-    //mengecek informasi yang dimasukkan user apakah terdaftar pada database
-    bcrypt.compare(plaintextPassword, hash, function(err, result) {
-            if (result) {
-                // password is valid
+    const query = "SELECT * FROM users WHERE username = $1";
+  db.query(query, [temp.username], (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error logging in.");
+    } else {
+      if (results.rows.length > 0) {
+        const user = results.rows[0];
+        bcrypt.compare(temp.password, user.password, (err, isMatch) => {
+          if (err) {
+            console.error(err);
+            res.status(500).send("Error logging in.");
+          } else {
+            if (isMatch) {
+              res.end("done");
+            } else {
+              res.status(401).send("Invalid password.");
             }
+          }
         });
-    db.query(query, (err, results) => {
-       //tambahkan konfigurasi login di sini
-    });
- 
+      } else {
+        res.status(401).send("Username Not Found.");
+      }
+    }
+  });
 });
 
 //router 3: melakukan register akun
@@ -101,7 +119,6 @@ router.post('/register', (req, res) => {
             notifier.notify('Hash Gagal')
             return;
         }
-
         //melakukan registrasi user baru ke dalam database
         const query = `INSERT INTO users (username, password) VALUES
         ('${temp.username}', '${hashedPassword}');`
@@ -112,13 +129,13 @@ router.post('/register', (req, res) => {
                 notifier.notify("Register Gagal")
                 return
             }
-            res.send(`Username : ${req.body.username} berhasil terdaftar`);
+            res.send(`Gagal terdaftar`);
         });
     });
     res.end(`Username : ${req.body.username} berhasil terdaftar`);
 });
 
-app.delete('/deleteacc', async (req, res) => {
+app.delete('/deleteacc', async (req, res) => {//tambahin delete semua data user
     const {user_id} = req.body
     temp = req.session;
     temp.user_id = user_id;
@@ -388,6 +405,6 @@ router.get('/logout', (req, res) => {
 });
  
 app.use('/', router);
-app.listen(process.env.PORT || 5555, () => {
-    console.log(`App Started on PORT ${process.env.PORT || 5555}`);
+app.listen(process.env.PORT || 3001, () => {
+    console.log(`App Started on PORT ${process.env.PORT || 3001}`);
 });

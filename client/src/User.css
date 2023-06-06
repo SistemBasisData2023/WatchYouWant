@@ -1,0 +1,96 @@
+.user-container {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    color:white;
+  }
+  
+  .user-profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .user-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-right: 20px;
+    background: blue;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-name {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .user-location {
+    font-size: 16px;
+    color: #888;
+  }
+  
+  .user-stats {
+    display: flex;
+    margin-bottom: 20px;
+    flex-direction: row;
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .count {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .label {
+    font-size: 16px;
+    color: #888;
+  }
+  
+  .user-comments {
+    border-top: 1px solid #ccc;
+    padding-top: 20px;
+  }
+  
+  .comment {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .comment-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .comment-content {
+    flex-grow: 1;
+  }
+  
+  .comment-username {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+  
+  .comment-text {
+    font-size: 14px;
+    color: #444;
+  }
+  
+  .comment-date {
+    font-size: 12px;
+    color: #888;
+  }
+
+
+  

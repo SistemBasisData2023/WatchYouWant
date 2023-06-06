@@ -1,0 +1,164 @@
+.register-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.register-heading {
+  font-size: 4rem;
+  font-family: "Clash Display Regular";
+  text-align: center;
+  background: aqua;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  cursor: default;
+  white-space: nowrap;
+  margin-bottom: 2rem;
+}
+
+.register-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  padding: 40px;
+  background: linear-gradient(
+    90deg,
+    rgba(31, 40, 51, 1) -100%,
+    rgba(11, 12, 16, 1) 200%,
+    rgba(31, 40, 51, 1) 0%
+  );
+  box-sizing: border-box;
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+}
+
+.register-box p:first-child {
+  margin: 0 0 30px;
+  padding: 0;
+  font-family: "Clash Display Regular";
+  color: #fff;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.register-box .form-group {
+  position: relative;
+  width: 100%;
+}
+
+.register-box .form-group input {
+  width: 100%;
+  padding: 10px 0;
+  font-family: "Clash Display Regular";
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 30px;
+  border: none;
+  border-bottom: 1px solid #fff;
+  outline: none;
+  background: transparent;
+}
+
+.register-box .form-group label {
+  position: absolute;
+  top: 0;
+  font-family: "Clash Display Semibold";
+  left: 0;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #fff;
+  pointer-events: none;
+  transition: 0.5s;
+  animation: moveLabel 0.5s ease-in-out forwards;
+}
+
+.register-box .form-group input:focus ~ label,
+.register-box .form-group input:valid ~ label {
+  top: -20px;
+  left: 0;
+  color: #75e2ff;
+  font-size: 12px;
+}
+
+.register-box form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-box form .register-button {
+  position: relative;
+  font-family: "Clash Display Semibold";
+  display: inline-block;
+  padding: 10px 20px;
+  font-weight: bold;
+  color: #fff;
+  font-size: 16px;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: 0.5s;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  letter-spacing: 3px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  animation: buttonAnimation 2s infinite;
+}
+
+.register-box form .register-button:hover {
+  animation: none;
+  transform: scale(1.1);
+  background: #75e2ff;
+  color: #0b0c10;
+  border-radius: 5px;
+}
+
+.register-box p:last-child {
+  font-family: "Clash Display Regular";
+  color: #fff;
+  font-size: 14px;
+}
+
+.register-box a {
+  font-family: "Clash Display Regular";
+  color: #75e2ff;
+  margin-left: 5px;
+}
+
+.register-box a:hover {
+  background: transparent;
+  color: #aaa;
+  border-radius: 5px;
+}
+
+@keyframes moveLabel {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-20px);
+    font-size: 12px;
+    color: #75e2ff;
+  }
+}
+
+@keyframes buttonAnimation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

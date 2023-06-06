@@ -1,7 +1,6 @@
-.movie-title {
+.movie-container {
   display: flex;
-  font-size: 5rem;
-  padding: 30px;
+  padding: 15px;
   flex-direction: column;
   color: white;
 }
@@ -10,24 +9,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 50px;
+  padding: 20px;
 }
 
 .movie-poster {
-  max-width: 960px;
-  margin-right: 20px;
-  border-radius: 10px;
+  max-width: 300px;
+  margin-right: 10px;
+  border-radius: 8px;
 }
 
 .trailer-container {
   position: relative;
-  width: 960px;
-  height: 540px;
-  margin-left: 20px;
+  width: 600px;
+  height: 337.5px;
+  margin-left: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 20px;
+  border-radius: 12px;
 }
 
 .trailer-container iframe {
@@ -39,30 +38,35 @@
 }
 
 .movie-title {
-  font-size: 5rem;
+  font-size: 3rem;
   margin-bottom: 10px;
+  padding: 15px;
   font-family: 'Clash Display Semibold';
   text-align: center;
-}
-
-.movie-details {
-  font-size: 4rem;
-  font-family: 'Clash Display Regular';
-  text-align: left;
-  flex-direction: row;
-  padding: 50px;
   color: white;
 }
 
-.movie-overview{
-  padding: 10px;
-  width: 50%;
-  text-align: justify;
+.movie-details {
   font-size: 2rem;
+  font-family: 'Clash Display Regular';
+  text-align: left;
+  flex-direction: row;
+  padding: 20px;
+  color: white;
+}
+
+.movie-comp {
+  padding: 10px;
+  width: 100%;
+  text-align: justify;
+  font-size: 1.6rem;
 }
 
 .additional-details {
-  padding: 10px;
-  text-align: justify;
+  margin-top: 15px;
   font-size: 2rem;
+  font-family: 'Clash Display Regular';
+  text-align: left;
+  flex-direction: row;
+  color: white;
 }

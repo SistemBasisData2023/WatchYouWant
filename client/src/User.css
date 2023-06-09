@@ -4,33 +4,40 @@
     max-width: 800px;
     padding: 20px;
     color:white;
+    zoom: 2;
   }
   
   .user-profile {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
+    font-family: "Clash Display Regular";
   }
   
   .user-photo {
     width: 100px;
     height: 100px;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
     margin-right: 20px;
-    background: blue;
+    color: #45A29E; 
   }
   
   .user-info {
     display: flex;
     flex-direction: column;
+    color:white;
+    font-family: "Clash Display Regular";
   }
   
   .user-name {
+    color:white;
     font-size: 24px;
     margin-bottom: 5px;
   }
   
-  .user-location {
+  .user-email {
     font-size: 16px;
     color: #888;
   }
@@ -39,6 +46,16 @@
     display: flex;
     margin-bottom: 20px;
     flex-direction: row;
+  }
+
+  .fav-genre {
+    font-family: "Clash Display Regular";
+    margin-left: 10px;
+  }
+
+  .fav-movies-count{
+    font-family: "Clash Display Regular";
+    margin-left: 10px;
   }
   
   .stat {
@@ -55,42 +72,33 @@
     color: #888;
   }
   
-  .user-comments {
-    border-top: 1px solid #ccc;
-    padding-top: 20px;
+  .favorite-movies{
+    zoom: 0.6;
   }
-  
-  .comment {
+
+  .fav-container {
+    margin-top: 1rem;
+    margin-left: 1rem;
+    size: 500px;
     display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+    overflow-x: auto; /* Set overflow-x to 'auto' to enable horizontal scrolling */
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #45A29E #1f2833;
+    width: calc(100% - 2rem); /* Adjust the width to fit the available space */
+    white-space: nowrap;
+    position: relative; /* Add relative positioning */
   }
   
-  .comment-photo {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
+  .fav-container::-webkit-scrollbar {
+    height: 8px; /* Set the height of the scrollbar */
   }
   
-  .comment-content {
-    flex-grow: 1;
+  .fav-container::-webkit-scrollbar-thumb {
+    background-color: #45A29E; /* Set the color of the scrollbar thumb */
+    border-radius: 4px; /* Add border radius to the thumb */
   }
   
-  .comment-username {
-    font-size: 18px;
-    margin-bottom: 5px;
+  .fav-container::-webkit-scrollbar-track {
+    background-color: #1f2833; /* Set the color of the scrollbar track */
   }
-  
-  .comment-text {
-    font-size: 14px;
-    color: #444;
-  }
-  
-  .comment-date {
-    font-size: 12px;
-    color: #888;
-  }
-
-
-  

@@ -1,0 +1,49 @@
+.btn {
+    position: relative;
+    border-radius: 10px;
+    margin-right: 2rem;
+    background-color: #1F2833;
+    border: 2px solid #45A29E; /* Updated border color */
+  }
+  
+  .btn::after {
+    content: 'delete';
+    position: absolute;
+    top: -130%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background-color: rgb(168, 7, 7);
+    padding: 4px 8px;
+    border-radius: 20px;
+    transition: .2s linear;
+    transition-delay: .2s;
+    color: #66FCF1; /* Updated text color */
+    text-transform: uppercase;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  .icon {
+    transform: scale(1); /* Updated transform value */
+    transition: .2s linear;
+    fill: #75e2ff; /* Updated icon color */
+  }
+  
+  .btn:hover > .icon {
+    margin-top: 3px;
+    transform: scale(1.2); /* Updated transform value */
+  }
+  
+  .btn:hover > .icon path {
+    fill: rgb(168, 7, 7);
+  }
+  
+  .btn:hover::after {
+    visibility: visible;
+    opacity: 1;
+    top: -160%;
+  }
+  

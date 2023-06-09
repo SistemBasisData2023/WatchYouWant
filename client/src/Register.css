@@ -1,4 +1,5 @@
 .register-page {
+  zoom: 1.8;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,7 +11,7 @@
   font-size: 4rem;
   font-family: "Clash Display Regular";
   text-align: center;
-  background: aqua;
+  background: #66FCF1;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

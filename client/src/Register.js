@@ -12,7 +12,8 @@ const Register = ({ onRegister }) => {
   const handleRegister= async (e) => {
     e.preventDefault();
     try {
-      const data = {username, password};
+      const data = {username, email, password};
+      console.log(data);
 
       const response = await fetch('http://localhost:3001/register', {
         method: 'POST',
@@ -36,7 +37,10 @@ const Register = ({ onRegister }) => {
 
   return (
     <div className="register-page">
-      <h1 className="register-heading">WatchYouWant - Register</h1>
+      <div className="login-logo">
+        <img src="https://i.postimg.cc/bw8rYjsP/2watchyouwant.png" alt="WatchYouWant Logo" className="login-img" />
+      </div>
+      <h1 className="register-heading">WatchYouWant</h1>
       <div className="register-box">
         <form onSubmit={handleRegister}>
           <div className="form-group">

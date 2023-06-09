@@ -1,9 +1,10 @@
 // Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './App'
 import './Login.css';
 
-const Login = ({ hideTopBar }) => {
+const Login = ({ hideTopBar, handleLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -11,8 +12,11 @@ const Login = ({ hideTopBar }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const data = {username, password};
-
+      const data = {
+        identifier: username, 
+        password: password
+      }
+    
       const response = await fetch('http://localhost:3001/login', {
         method: 'POST',
         headers: {
@@ -21,27 +25,40 @@ const Login = ({ hideTopBar }) => {
         body: JSON.stringify(data),
       });
 
+      const result = await response.json()
+
+
+      
       if (response.ok) {
         alert('Login successful');
-        navigate('/app'); // Navigate to the desired page (App.js)
+        navigate('/app');
+        if (typeof handleLoginSuccess === 'function') {
+          handleLoginSuccess(result);
+        }
       } else {
         alert('Invalid email or password');
       }
     } catch (error) {
       console.error('Error logging in:', error);
     }
-
   };
-
+  
+  const handleSubmit = (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+    handleLogin(e);
+  };
   
   return (
     <div className="loginpage">
-      {!hideTopBar && (
-        <h1 className="login-heading">WatchYouWant</h1>
-      )}
+      <div className="login-logo">
+        <img src="https://i.postimg.cc/bw8rYjsP/2watchyouwant.png" alt="WatchYouWant Logo" className="login-img" />
+      </div>
+      <h1 className="register-heading">WatchYouWant </h1>
       <div className="login-box">
         <p>Login</p>
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSubmit}>
           <div className="user-box">
             <input
               required

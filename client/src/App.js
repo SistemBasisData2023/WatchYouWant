@@ -10,6 +10,8 @@ import Register from './Register';
 import Login from './Login';
 import User from './User';
 import { FaUserCircle } from 'react-icons/fa';
+import { TbLogout } from "react-icons/tb";
+import { BsArrowRight, BsArrowLeft } from 'react-icons/bs';
 
 const fetch = require('node-fetch');
 
@@ -23,7 +25,12 @@ const App = () => {
   const [koreanMovies, setKoreanMovies] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [featuredFilm, setFeaturedFilm] = useState(null);
+  const [featuredFilms, setFeaturedFilms] = useState([]);
+  const [currentFilmIndex, setCurrentFilmIndex] = useState(0);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [user, setUser] = useState('');
+  const defUsername = username || 'User';
 
   const searchMovies = async (title) => {
     try {
@@ -91,12 +98,16 @@ const App = () => {
     }
   };
 
-  const fetchFeaturedFilm = async () => {
+  const fetchFeaturedFilms = async () => {
     try {
       const genreId = 878; // Replace with the desired genre ID (e.g., 878 for Science Fiction)
-      fetchRandomMovie(genreId);
+      const filmCount = 5; // Number of featured films to fetch
+      const films = await Promise.all(
+        Array.from({ length: filmCount }, () => fetchRandomMovie(genreId))
+      );
+      setFeaturedFilms(films);
     } catch (error) {
-      console.error('Error fetching featured film:', error);
+      console.error('Error fetching featured films:', error);
     }
   };
 
@@ -108,7 +119,7 @@ const App = () => {
       const data = await response.json();
       if (data.results && data.results.length > 0) {
         const randomMovie = data.results[Math.floor(Math.random() * data.results.length)];
-        setFeaturedFilm(randomMovie);
+        return randomMovie;
       }
     } catch (error) {
       console.error('Error fetching random movie:', error);
@@ -116,16 +127,16 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchFeaturedFilm();
+    fetchFeaturedFilms();
     setSearchTerm('');
     fetchMovies();
   }, []);
 
   const handleHomeClick = () => {
     fetchMovies();
-    fetchFeaturedFilm();
+    fetchFeaturedFilms();
     setSearchResults([]);
-    setSearchTerm(''); 
+    setSearchTerm('');
   };
 
   const location = useLocation();
@@ -138,40 +149,114 @@ const App = () => {
     navigate('/user');
   };
 
+  const handleLogoutClick = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/logout', {
+        method: 'GET',
+        credentials: 'include',
+      });
+  
+      if (response.status === 200) {
+        // Logout successful, navigate to the login page or any other desired page
+        navigate('/');
+      } else {
+        console.error('Failed to logout');
+        // Handle error or show an error message
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+      // Handle error or show an error message
+    }
+    setUser(null);
+    if (!user) {
+      navigate('/');
+    }
+  };
+
+  const handleLoginSuccess = (result) => {
+    console.log(result.username);
+    console.log(result.user_id);
+    setUsername(result.username);
+    setEmail(result.email);
+    setUser(result);
+  };
+
+  const handleNextFilm = () => {
+    setCurrentFilmIndex((prevIndex) => (prevIndex + 1) % featuredFilms.length);
+  };
+
+  const handlePrevFilm = () => {
+    setCurrentFilmIndex((prevIndex) => (prevIndex - 1 + featuredFilms.length) % featuredFilms.length);
+  };
+
   return (
     <div className="app">
       {!isLoginPage && !isRegisterPage && (
         <div className="top">
-          <h1 className="home-title">
-            <Link to="/app" className="home-link" onClick={handleHomeClick}>
-              WatchYouWant
-            </Link>
-          </h1>
-          <div className="search">
-            <SearchInput onSearch={searchMovies} handleHomeClick={handleHomeClick} setSearchTerm={setSearchTerm} searchTerm={searchTerm}/>
+          <div className="logo-image">
+          <Link to="/app" onClick={handleHomeClick}>
+            <img src="https://i.postimg.cc/bw8rYjsP/2watchyouwant.png" alt="WatchYouWant Logo" className="logo-img" />
+          </Link>
           </div>
-          <h1 className="home-welcome">Welcome Watcher!</h1>
-          <div className="profile-icon" onClick={handleProfileClick}>
-            <FaUserCircle size={70} />
+          <div className="search">
+            <SearchInput
+              onSearch={searchMovies}
+              handleHomeClick={handleHomeClick}
+              setSearchTerm={setSearchTerm}
+              searchTerm={searchTerm}
+            />
+          </div>
+          <div className="h1-container"> {/* Add the h1-container div */}
+            <h1 className="home-title">
+              <Link to="/app" className="home-link" onClick={handleHomeClick}>
+                WatchYouWant
+              </Link>
+              <h2 className="home-welcome">
+                Welcome {defUsername}!
+              </h2>
+            </h1>
+          </div>
+          <div className="topbar-icon" onClick={handleProfileClick}>
+            <FaUserCircle size={40} />
+          </div>
+          <div className="topbar-icon" onClick={handleLogoutClick}>
+            <TbLogout size={40} />
           </div>
         </div>
       )}
       <Routes>
-        <Route path="/" element={<Login hideTopBar={true} />} />
+        <Route path="/" element={<Login hideTopBar={true} handleLoginSuccess={handleLoginSuccess} />} />
         <Route path="/register" element={<Register hideTopBar={true} />} />
         <Route
           path="/app"
           element={
             <>
-              {featuredFilm && (
-                    <Link to={`/movie/${featuredFilm.id}`} style={{ textDecoration: 'none' }}>
-                    <div className="movie-banner" style={{ backgroundImage: featuredFilm ? `url(https://image.tmdb.org/t/p/original/${featuredFilm.backdrop_path})` : '' }}>
-                      <div className="movie-overlay"></div>
-                      <div className="movie-details">
-                        <h1 className="section-text">{featuredFilm.title}</h1>
+                {searchResults.length === 0 && featuredFilms.length > 0 && (
+                  <div className="carousel-section">
+                    <div className="carousel-container">
+                      <div className="carousel">
+                        {featuredFilms.map((film, index) => (
+                          <Link to={`/movie/${film.id}`} key={film.id}>
+                            <div
+                              className={`movie-banner ${index === currentFilmIndex ? 'active' : ''}`}
+                              style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original/${film.backdrop_path})` }}
+                            >
+                              <div className="movie-overlay"></div>
+                              <div className="banner-title">
+                                <h1 className="section-text">{film.title}</h1>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="carousel-arrow left" onClick={handlePrevFilm}>
+                        <BsArrowLeft size={32} />
+                      </div>
+                      <div className="carousel-arrow right" onClick={handleNextFilm}>
+                        <BsArrowRight size={32} />
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 )}
 
               {searchResults.length > 0 && (
@@ -242,8 +327,8 @@ const App = () => {
             </>
           }
         />
-        <Route path="/movie/:id" element={<Movie />} />
-        <Route path="/user" element={<User email="example@example.com" />} />
+        <Route path="/movie/:id" element={<Movie user={user} />} />
+        <Route path="/user" element={<User user={user} username={username} email={email}/>} />
       </Routes>
     </div>
   );

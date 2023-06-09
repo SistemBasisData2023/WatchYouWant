@@ -59,29 +59,21 @@ app.use(cors({
 );
 var temp;
  
-//ROUTERS
- 
-// //Router 1: Menampilkan landing page (login/register)
-// router.get('/', (req, res) => {
-//     temp = req.session;
-//     if (temp.username && temp.visits) { //jika user terdaftar maka akan masuk ke halaman admin
-//         return res.redirect('/admin');
-//     } else { //login / register page
-//         temp.visits = 1;
-//         res.end(
-            
-//         );
-//     }
-// });
- 
-//Router 2: Melakukan Login
 router.post('/login', (req, res) => {
-    const {username, password} = req.body
-    temp = req.session;
-    temp.username = username;
-    temp.password = password;
-    const query = "SELECT * FROM users WHERE username = $1";
-  db.query(query, [temp.username], (err, results) => {
+  const { identifier, password } = req.body;
+  console.log(req.body);
+  const temp = req.session;
+  temp.identifier = identifier;
+  temp.password = password;
+
+  let query;
+  if (identifier && identifier.includes('@')) {
+    query = `SELECT * FROM users WHERE email = '${temp.identifier}'`;
+  } else {
+    query = `SELECT * FROM users WHERE username = '${temp.identifier}'`;
+  }
+
+  db.query(query, (err, results) => {
     if (err) {
       console.error(err);
       res.status(500).send("Error logging in.");
@@ -94,47 +86,66 @@ router.post('/login', (req, res) => {
             res.status(500).send("Error logging in.");
           } else {
             if (isMatch) {
-              res.end("done");
+              res.status(200).send(results.rows[0])
             } else {
               res.status(401).send("Invalid password.");
             }
           }
         });
       } else {
-        res.status(401).send("Username Not Found.");
+        res.status(401).send("Invalid email/username");
       }
     }
   });
 });
 
-//router 3: melakukan register akun
+
 router.post('/register', (req, res) => {
-    const {username, password} = req.body
+    const { username, email, password } = req.body;
     temp = req.session;
     temp.username = username;
     temp.password = password;
-
+    temp.email = email;
+    console.log(req.body);
     bcrypt.hash(temp.password, 10, (err, hashedPassword) => {
+      if (err) {
+        notifier.notify('Hash Gagal');
+        return;
+      }
+  
+      // Melakukan registrasi user baru ke dalam database
+      const query = `INSERT INTO users (email, username, password) VALUES ('${temp.email}', '${temp.username}', '${hashedPassword}');`;
+      db.query(query, (err, results) => {
         if (err) {
-            notifier.notify('Hash Gagal')
-            return;
+          console.log(err);
+          notifier.notify("Register Gagal");
+          return;
         }
-        //melakukan registrasi user baru ke dalam database
-        const query = `INSERT INTO users (username, password) VALUES
-        ('${temp.username}', '${hashedPassword}');`
-
-        db.query(query, (err, results) => {
-            if(err){
-                console.log(err)
-                notifier.notify("Register Gagal")
-                return
-            }
-            res.send(`Gagal terdaftar`);
-        });
+        res.send(`Username: ${req.body.username}, Email: ${temp.email} berhasil terdaftar`);
+        res.end();
+      });
     });
-    res.end(`Username : ${req.body.username} berhasil terdaftar`);
-});
+  });
 
+  app.get('/getuser', async (req, res) => {
+    const { identifier } = req.body;
+    
+      try {
+        let query;
+        if (identifier.includes('@')) {
+          query = `SELECT * FROM users WHERE email = '${identifier}'`;
+        } else {
+          query = `SELECT * FROM users WHERE username = '${identifier}'`;
+        }
+        const result = await db.query(query);
+        res.json(result.rows[0])
+        console.log(result.rows[0]);
+      } catch (error) {
+        console.error('Error retrieving user:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+  });
+  
 app.delete('/deleteacc', async (req, res) => {//tambahin delete semua data user
     const {user_id} = req.body
     temp = req.session;
@@ -153,8 +164,27 @@ app.delete('/deleteacc', async (req, res) => {//tambahin delete semua data user
     }
   });
 
+router.post('/addstatus', async (req, res) => {
+  const {status, user_id} = req.body;
+  
+  try {
+    const result = await db.query('SELECT * FROM users WHERE user_id = $1', [user_id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await db.query('UPDATE users SET status = $1 WHERE user_id = $2', [status, user_id]);
+
+    return res.json({ message: 'Status updated successfully' });
+  } catch (error) {
+    console.error('Error adding/updating status:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/getmovie', async (req, res) => {
-    const {search} = req.body
+    const {search} = req.body;
     temp = req.session;
     temp.search = search;
   
@@ -167,93 +197,93 @@ router.get('/getmovie', async (req, res) => {
         console.error('An error occurred while fetching data from the TMDB API:', error);
         res.status(500).json({ error: 'An error occurred while processing the request' });
       }
-  });
+});
 
 
 router.post('/addfav', async (req, res) => {
-const {movie_id, user_id} = req.body
-temp = req.session;
-temp.movie_ID = movie_id;
-temp.user_ID = user_id;
-
-// Make a GET request to OMDB API to fetch movie details
-try {
-    const response = await axios.get(`https://api.themoviedb.org/3/movie/${temp.movie_ID}?api_key=7c020dc3c50fdb639f81999630743ff1`);
-    const movie = response.data;
-
-    // Insert the movie data into the PostgreSQL database
-    const query = 'INSERT INTO fav_movie (user_id, movie_id) VALUES ($1, $2)';
-    const values = [temp.user_ID , temp.movie_ID];
-
-    await db.query(query, values);
-    res.send(`${movie.title} ditambahkan ke favorit`);
-} catch (error) {
-    console.error('An error occurred while fetching data from OMDB API or inserting into the database:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request' });
-}
-});
-
-router.get('/getfav', async (req, res) => {
-const {user_id} = req.body
-temp = req.session;
-temp.user_ID = user_id;
-try {
-    // Retrieve the IMDb IDs associated with the user from the PostgreSQL database
-    const query = 'SELECT movie_id FROM fav_movie WHERE user_id = $1';
-    const values = [user_id];
-
-    const result = await db.query(query, values);
-    const movie_IDs = result.rows.map(row => row.movie_id);
-
-    // Fetch movie data from the TMDB API for each IMDb ID and extract the desired fields
-    const movies = await Promise.all(movie_IDs.map(async movie_id => {
-        const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
-        const movieData = response.data;
+    const {movie_id, user_id} = req.body;
+    temp = req.session;
+    temp.movie_ID = movie_id;
+    temp.user_ID = user_id;
+    
+    // Make a GET request to OMDB API to fetch movie details
+    try {
+        const response = await axios.get(`https://api.themoviedb.org/3/movie/${temp.movie_ID}?api_key=7c020dc3c50fdb639f81999630743ff1`);
+        const movie = response.data;
+    
+        // Insert the movie data into the PostgreSQL database
         
-        // Extract the desired fields from the movie data
-        const { id, title, release_date, overview, poster_path } = movieData;
-
-        return { id, title, release_date, overview, poster_path };
-    }));
-
-    res.json(movies); // Send the filtered movie list as a JSON response
+        const query = `UPDATE users SET movie_ids = array_append(movie_ids, ${temp.movie_ID}) where user_id = ${temp.user_ID};`;
+    
+        await db.query(query);
+        res.send(`${movie.title} ditambahkan ke favorit`);
     } catch (error) {
-    console.error('An error occurred while fetching data from the database or TMDB API:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request' });
+        console.error('An error occurred while fetching data from OMDB API or inserting into the database:', error);
+        res.status(500).json({ error: 'An error occurred while processing the request' });
     }
 });
-  
-router.delete('/removefav', async (req, res) => {
-const {movie_id} = req.body
-temp = req.session;
-temp.movie_ID = movie_id;
-try {
-    const response = await axios.get(`https://api.themoviedb.org/3/movie/${temp.movie_ID}?api_key=7c020dc3c50fdb639f81999630743ff1`);
-    const movie = response.data;
-    // Delete the data from the PostgreSQL database
-    const query = 'DELETE FROM fav_movie WHERE movie_id = $1';
-    const values = [temp.movie_ID];
-    
-    await db.query(query, values);
-    res.send(`${movie.title} dihapus dari favorit`);
-} catch (error) {
-    console.error('An error occurred while deleting data from the database:', error);
+
+router.get('/getfav/:user_id', async (req, res) => {
+  const { user_id } = req.params;
+  try {
+    // Retrieve the IMDb IDs associated with the user from the PostgreSQL database
+    const query = 'SELECT movie_ids FROM users WHERE user_id = $1';
+    const values = [user_id];
+    const result = await db.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No favorite movies found' });
+    }
+
+    const movie_IDs = result.rows[0].movie_ids;
+
+    // Fetch movie data from the TMDB API for each IMDb ID and extract the desired fields
+    const movies = [];
+    for (const movie_id of movie_IDs) {
+      const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
+      const movieData = response.data;
+
+      // Extract the desired fields from the movie data
+      const { id, title, release_date, overview, poster_path } = movieData;
+      movies.push({ id, title, release_date, overview, poster_path });
+    }
+
+    res.json(movies); // Send the filtered movie list as a JSON response
+  } catch (error) {
+    console.error('An error occurred while fetching data from the database or TMDB API:', error);
     res.status(500).json({ error: 'An error occurred while processing the request' });
-}
+  }
+});
+
+
+router.delete('/deletefav', async (req, res) => {
+    const {movie_id, user_id} = req.body
+    temp = req.session;
+    temp.movie_ID = movie_id;
+    temp.user_ID = user_id;
+    try {
+        const response = await axios.get(`https://api.themoviedb.org/3/movie/${temp.movie_ID}?api_key=7c020dc3c50fdb639f81999630743ff1`);
+        const movie = response.data;
+        // Delete the data from the PostgreSQL database
+        const query = `UPDATE users SET movie_ids = array_remove(movie_ids, ${temp.movie_ID}) where user_id = ${temp.user_ID};`;
+        
+        await db.query(query);
+        res.send(`${movie.title} dihapus dari favorit`);
+    } catch (error) {
+        console.error('An error occurred while deleting data from the database:', error);
+        res.status(500).json({ error: 'An error occurred while processing the request' });
+    }
 });
 
 router.post('/addcomment', async (req, res) => {
 const { movie_id, user_id, comment} = req.body; // Get the movie ID, user ID, and comment from the request body
-temp = req.session;
-temp.user_ID = user_id;
-temp.movie_ID = movie_id;
-temp.comments = comment;
+
 try {
     // Insert the comment into the PostgreSQL database
-    const response = await axios.get(`https://api.themoviedb.org/3/movie/${temp.movie_ID}?api_key=7c020dc3c50fdb639f81999630743ff1`);
+    const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
     const movie = response.data;
     const query = 'INSERT INTO comments (comment, user_id, movie_id) VALUES ($1, $2, $3)';
-    const values = [temp.comments, temp.user_ID, temp.movie_ID];
+    const values = [comment, user_id, movie_id];
 
     await db.query(query, values);
     res.send(`komen pada ${movie.title} berhasil ditambahkan`);
@@ -262,6 +292,24 @@ try {
     res.status(500).json({ error: 'An error occurred while processing the request' });
 }
 });
+
+router.post('/addreply', async (req, res) => {
+    const { movie_id, user_id, comment, reply_id} = req.body; // Get the movie ID, user ID, and comment from the request body
+    
+    try {
+        // Insert the comment into the PostgreSQL database
+        const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
+        const movie = response.data;
+        const query = 'INSERT INTO comments (comment, user_id, movie_id, reply_id) VALUES ($1, $2, $3, $4)';
+        const values = [comment, user_id, movie_id, reply_id];
+    
+        await db.query(query, values);
+        res.send(`komen pada ${movie.title} berhasil ditambahkan`);
+    } catch (error) {
+        console.error('An error occurred while inserting the comment into the database:', error);
+        res.status(500).json({ error: 'An error occurred while processing the request' });
+    }
+    });
 
 router.delete('/deletecomment', async (req, res) => {
 const { comment_id } = req.body; // Get the movie ID, user ID, and comment from the request body
@@ -282,17 +330,16 @@ try {
 
 router.get('/getcomment', async (req, res) => {
 const { movie_id } = req.body;
-temp = req.session;
-temp.movie_id = movie_id;
 try {
     // Retrieve the comments and user IDs from the PostgreSQL database based on the movie ID
     const query = `
     SELECT c.comment, c.user_id, u.username
     FROM comments AS c
     JOIN users AS u ON c.user_id = u.user_id
-    WHERE c.movie_id = $1
+    WHERE c.movie_id = $1 and c.reply_id IS NULL
+    ORDER BY created_at ASC
     `;
-    const values = [temp.movie_id];
+    const values = [movie_id];
 
     const result = await db.query(query, values);
     const comments = result.rows;
@@ -304,24 +351,43 @@ try {
 }
 });
   
+router.get('/getreply', async (req, res) => {
+  const { reply_id } = req.body;
+  try {
+    const query = `
+    SELECT c.comment, c.user_id, u.username
+    FROM comments AS c
+    JOIN users AS u ON c.user_id = u.user_id
+    WHERE reply_id = '${reply_id}' ORDER BY created_at ASC`;
+
+    const result = await db.query(query);
+    const comments = result.rows;
+    res.json(comments); // Send the comments as a JSON response
+ 
+  } catch (error) {
+    console.error('Error retrieving comments:', error);
+  }
+});
+
+
 router.get('/getrating', async (req, res) => {
-const { movie_id } = req.body; 
-temp = req.session;
-temp.movie_id = movie_id;
+  const { movie_id } = req.body; 
+  temp = req.session;
+  temp.movie_id = movie_id;
 
-try {
-    // Retrieve the average rating from the PostgreSQL database based on the movie ID
-    const query = 'SELECT AVG(rating) AS average_rating FROM ratings WHERE movie_id = $1';
-    const values = [temp.movie_id];
+  try {
+      // Retrieve the average rating from the PostgreSQL database based on the movie ID
+      const query = 'SELECT AVG(rating) AS average_rating FROM ratings WHERE movie_id = $1';
+      const values = [temp.movie_id];
 
-    const result = await db.query(query, values);
-    const averageRating = result.rows[0].average_rating;
+      const result = await db.query(query, values);
+      const averageRating = result.rows[0].average_rating;
 
-    res.json({ averageRating }); // Send the average rating as a JSON response
-} catch (error) {
-    console.error('An error occurred while fetching data from the database:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request' });
-}
+      res.json({ averageRating }); // Send the average rating as a JSON response
+  } catch (error) {
+      console.error('An error occurred while fetching data from the database:', error);
+      res.status(500).json({ error: 'An error occurred while processing the request' });
+  }
 });
 
 router.post('/addrating', async (req, res) => {
@@ -344,56 +410,6 @@ try {
 }
 });
   
-// // Router 6: merupakan tampilan data ketika login berhasil dilakukan
-// router.get('/admin', (req, res) => {
-//     temp = req.session;
-//     if (temp.username) {
-//         res.write(`<html>
-//         <head>
-//             <title>Modul 9 - SBD</title>
-//         </head>
-//         <body style="background-color: F8CB2E; text-align: center;">`);
-        
-//         //tambahkan welcoming beserta username
-        
-//         res.write(
-//         `<a> Jumlah kunjungan ${temp.visits}</a>
-//         <h5>Refresh page to increase visits</h5>
-//         `
-//         );
-//         temp.visits++;
-//         res.write( // table header
-//            `<table id=data_gaming>
-//                 <tr>
-//                     <th>ID</th>
-//                     <th>Nama Game</th>
-//                     <th>Jumlah Game</th>
-//                 </tr>`
-//         );  
-//         res.end(`</table></body>
-//         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-//         <script>
-//         alert("berhasil masuk");
-//             // Isi konfigurasi delete disini
-
-
-//             jQuery(document).ready(function($) {
-//                 $.post('/getdata', { }, function(data) {
-//                     console.log(data);
-//                     //melakukan pemanggilan data disini
-//                 });
-//             });
-//             </script>
-//         </html>`);
-//         console.log('Data Fetch successful');
-//         res.write('<a href=' + '/logout' + '>Click here to log out</a>');
-//     } 
-//     else {
-//         res.write('<h1>You need to log in before you can see this page.</h1>');
-//         res.end('<a href=' + '/' + '>Login</a>');
-//     }
-// });
- 
 //Router 7: mengheapus session
 router.get('/logout', (req, res) => {
     req.session.destroy(err => {

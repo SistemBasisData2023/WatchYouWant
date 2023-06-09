@@ -1,9 +1,22 @@
+
 .loginpage {
+  zoom: 1.8;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+}
+
+.login-logo {
+  width: 90px; /* Adjust the width as desired */
+  height: auto; /* Maintain the aspect ratio */
+  align-items: center;
+}
+
+.login-img {
+  width: 110px; /* Adjust the width as desired */
+  height: auto; /* Maintain the aspect ratio */
 }
 
 h1.login-heading {
@@ -47,7 +60,7 @@ h1.login-heading {
   width: 100%;
   padding: 10px 0;
   font-size: 16px;
-  color: #fff;
+  color: #C6C6C7;
   margin-bottom: 30px;
   border: none;
   border-bottom: 1px solid #fff;
@@ -63,6 +76,7 @@ h1.login-heading {
   padding: 10px 0;
   font-size: 16px;
   color: #fff;
+  opacity: 1;
   pointer-events: none;
   transition: 0.5s;
 }
@@ -94,7 +108,7 @@ h1.login-heading {
     font-size: 4rem;
     font-family: "Clash Display Regular";
     text-align: center;
-    background: aqua;
+    background: #66FCF1;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -163,7 +177,7 @@ h1.login-heading {
   
   .login-box .user-box input:focus ~ label,
   .login-box .user-box input:valid ~ label {
-    top: -20px;
+    top: -30px;
     left: 0;
     color: #75E2FF;
     font-size: 12px;

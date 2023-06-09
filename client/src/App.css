@@ -18,7 +18,7 @@
 }
 
 html {
-  zoom: 0.75; /* Set the initial zoom level */
+  zoom: 0.5; /* Set the initial zoom level */
 }
 
 body {
@@ -26,6 +26,20 @@ body {
   background: #0B0C10;
   min-zoom: 100%;
   max-zoom: 100%;
+}
+
+body::-webkit-scrollbar {
+  height: 5px;
+  width: 10px; /* Set the height of the scrollbar */
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: #45A29E; /* Set the color of the scrollbar thumb */
+  border-radius: 4px; /* Add border radius to the thumb */
+}
+
+body::-webkit-scrollbar-track {
+  background-color: #1f2833; /* Set the color of the scrollbar track */
 }
 
 .app {
@@ -42,45 +56,56 @@ body {
 .top {
   padding: 1rem;
   display: flex;
-  width: 100%;
-  flex-direction: row;
   align-items: center;
-  background: linear-gradient(90deg, 
-  rgba(31, 40, 51, 1) -100%,
-  rgba(11, 12, 16, 1) 200%,
-  rgba(31, 40, 51, 1) 0%
+  justify-content: space-between;
+  background: linear-gradient(
+    90deg,
+    rgba(31, 40, 51, 1) -100%,
+    rgba(11, 12, 16, 1) 200%,
+    rgba(31, 40, 51, 1) 0%
   );
-  justify-content: space-between; 
-  
+}
+
+.logo-image {
+  width: 90px; /* Adjust the width as desired */
+  height: auto; /* Maintain the aspect ratio */
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  width: 110px; /* Adjust the width as desired */
+  height: auto; /* Maintain the aspect ratio */
+
 }
 
 .h1-container {
-  flex-grow: 1;
   display: flex;
   align-items: center;
-  
+  flex-grow: 1;
+  justify-content: center; /* Add this line to center the heading */
 }
 
-h1.home-title {
+.home-title {
+  margin: 0;
   font-family: "Clash Display Regular";
   font-size: 3rem;
   letter-spacing: 0.9px;
-  background: #75E2FF;
+  background: #75e2ff;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  width: fit-content;
-  margin: 1rem;
-  cursor: default;
+  text-align: center; /* Add this line to center the text horizontally */
+  line-height: 1; /* Add this line to reduce the line height */
 }
 
 .home-welcome {
+  margin: 0;
   font-family: "Clash Display Light";
-  align-content: start;
-  justify-content: start;
-  font-size: 3rem;
-  color: #75E2FF;
+  font-size: 2rem;
+  color: #75e2ff;
   white-space: nowrap;
-  padding-left: 2rem;
+  text-align: center; /* Add this line to center the text horizontally */
+  margin-top: 0.5rem; /* Adjust the margin as desired */
 }
 
 .navbar {
@@ -134,15 +159,15 @@ h1.home-title {
   cursor: pointer;
 }
 
-.profile-icon {
-  color:#75E2FF ;
+.topbar-icon {
+  color: #75e2ff;
   display: flex;
   align-items: center;
 }
 
-.profile-icon > * {
-  margin-left: 2rem;
-  margin-right: 2rem;
+.topbar-icon > * {
+  margin-left: 0.5rem;
+  margin-right: 5rem;
 }
 
 .avatar-letter {
@@ -157,16 +182,65 @@ h1.home-title {
   align-items: center;
 }
 
-.movie-banner {
-  height: 1000px; /* Adjust the height as needed */
+.carousel-container {
+  position: relative;
   width: 100%;
-  background-size: cover;
-  background-position: center top;
+  height: 1000px; /* Add this line to adjust the stacking order */
+  overflow: hidden;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 80px;
+  height: 80px;
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.carousel-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-arrow.left {
+  left: 10px;
+}
+
+.carousel-arrow.right {
+  right: 10px;
+}
+
+.carousel-arrow svg {
   color: #fff;
-  position: relative; /* Add position relative to the banner */
+}
+
+.carousel {
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.movie-banner {
+  width: 100%;
+  height: 1000px; /* Adjust the height as per your requirements */
+  background-position: center;
+  background-size: cover;
+  position: absolute;
+  transition: transform 0.2s ease;
+}
+
+.movie-banner.active {
+  transform: translateX(0%);
+}
+
+.movie-banner:not(.active) {
+  transform: translateX(100%);
 }
 
 .movie-overlay {
@@ -176,14 +250,16 @@ h1.home-title {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1; /* Ensure the overlay is above other elements */
+  opacity: 0.8;
 }
 
-.movie-details {
-  position: relative;
-  z-index: 2; /* Ensure the details are above the overlay */
+.banner-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 20px;
+  color: #fff;
 }
-
 
 .movie-banner h1 {
   font-family: "Clash Display Semibold";
@@ -252,7 +328,7 @@ h1.home-title {
 .container {
   margin-top: 1rem;
   margin-left: 1rem;
-  size: 500px;
+  size: 800px;
   display: flex;
   overflow-x: auto; /* Set overflow-x to 'auto' to enable horizontal scrolling */
   padding-bottom: 1rem;

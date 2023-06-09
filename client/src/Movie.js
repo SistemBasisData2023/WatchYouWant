@@ -13,8 +13,10 @@ const Movie = ({ user }) => {
   const [comments, setComments] = useState([]);
   const navigate = useNavigate();
   const { id } = useParams();
-  const commentUsername = user.username || 'User';
   const [favoriteMovieIds, setFavoriteMovieIds] = useState([]);
+  const commentUsername = user.username || 'User';
+  const [selectedCommentId, setSelectedCommentId] = useState(null);
+  const [replyText, setReplyText] = useState('');
 
   const handleSearch = () => {
     if (searchTerm.trim() !== '') {
@@ -40,7 +42,7 @@ const Movie = ({ user }) => {
           },
           body: JSON.stringify(data),
         });
-    
+
         if (response.ok) {
           alert('Movie successfully added to favorites');
           setFavoriteMovieIds((prevIds) => [...prevIds, id]);
@@ -52,10 +54,8 @@ const Movie = ({ user }) => {
       }
     }
   };
-  
-  
 
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (commentText.trim() !== '') {
       const newComment = {
@@ -63,10 +63,81 @@ const Movie = ({ user }) => {
         content: commentText,
         date: new Date().toLocaleDateString(),
       };
-      setComments((prevComments) => [...prevComments, newComment]);
-      setCommentText('');
+      try {
+        const data = {
+          movie_id: id,
+          user_id: user.user_id,
+          comment: commentText,
+        };
+        const response = await fetch('http://localhost:3001/addcomment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        if (response.ok) {
+          setComments((prevComments) => [...prevComments, newComment]);
+          setCommentText('');
+        } else {
+          console.error('Error adding comment:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      }
     }
   };
+
+  const fetchComments = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/getcomment/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (response.ok) {
+        const commentsData = await response.json();
+        setComments(commentsData);
+      } else {
+        console.error('Error fetching comments:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const handleReplySubmit = async (commentId) => {
+    // Add the logic to submit a reply for a specific comment
+    // Send the replyText and commentId to the backend API
+    try {
+      const data = {
+        replyText,
+        commentId,
+      };
+      const response = await fetch(`http://localhost:3001/addreply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        // Reply posted successfully, update the comments
+        fetchComments();
+        setSelectedCommentId(null);
+        setReplyText('');
+      } else {
+        console.error('Error posting reply:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error posting reply:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [id]);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -139,8 +210,10 @@ const Movie = ({ user }) => {
           const favoriteMovieIds = data.map((movie) => movie.id);
           setFavoriteMovieIds(favoriteMovieIds);
         } else {
+          console.error('Error fetching favorites:', response.statusText);
         }
       } catch (error) {
+        console.error('Error fetching favorites:', error);
       }
     };
 
@@ -215,45 +288,77 @@ const Movie = ({ user }) => {
               </div>
             </div>
           </div>
-          <div className="comments">
-          <h3 className="comment-top">Comments</h3>
-            {comments.length === 0 ? (
-              <p>No comments yet.</p>
-            ) : (
-              comments.map((comment, index) => (
-                <div className="comment" key={index}>
-                  <div className="comment-header">
-                    <div className="comment-icon">
-                      <FaRegUserCircle size={70} />
-                    </div>
-                    <h4 className="comment-username">{comment.username}</h4>
-                  </div>
-                  <div className="comment-content">
-                    <p className="comment-text">{comment.content}</p>
-                    <span className="comment-date">Posted on: {comment.date}</span>
-                  </div>
+        <div className="comments">
+        <h3 className="comment-top">Comments</h3>
+        {comments.length === 0 ? (
+          <p>No comments yet.</p>
+        ) : (
+          comments.map((comment, index) => (
+            <div className="comment" key={index}>
+              <div className="comment-header">
+                <div className="comment-icon">
+                  <FaRegUserCircle size={70} />
                 </div>
-              ))
-            )}
-            <div className="comment-form">
-              <Form onSubmit={handleCommentSubmit}>
-                <Form.Group controlId="commentForm">
-                  <Form.Label>Your Comment</Form.Label>
-                  <div>
-                    <Form.Control
-                      as="textarea"
-                      rows={3}
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                    />
+                <h4 className="comment-username">{comment.username}</h4>
+              </div>
+              <div className="comment-content">
+                <p className="comment-text">{comment.content}</p>
+                <span className="comment-date">Posted on: {comment.date}</span>
+              </div>
+
+              {/* Reply section */}
+              <div className="reply-section">
+                {selectedCommentId === comment.id ? (
+                  <div className="reply-form">
+                    <Form onSubmit={() => handleReplySubmit(comment.id)}>
+                      <Form.Group controlId="replyForm">
+                        <Form.Label>Your Reply</Form.Label>
+                        <div>
+                          <Form.Control
+                            as="textarea"
+                            rows={3}
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                          />
+                        </div>
+                      </Form.Group>
+                      <Button variant="primary" type="submit">
+                        Post Reply
+                      </Button>
+                    </Form>
                   </div>
-                </Form.Group>
-                <Button variant="primary" type="submit">
-                  Post Comment
-                </Button>
-              </Form>
+                ) : (
+                  <button
+                    className="reply-button"
+                    onClick={() => setSelectedCommentId(comment.id)}
+                  >
+                    Reply
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          ))
+        )}
+
+        <div className="comment-form">
+          <Form onSubmit={handleCommentSubmit}>
+            <Form.Group controlId="commentForm">
+              <Form.Label>Your Comment</Form.Label>
+              <div>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+              </div>
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              Post Comment
+            </Button>
+          </Form>
+        </div>
+      </div>
         </>
       ) : (
         <p>Loading...</p>

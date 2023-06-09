@@ -328,16 +328,16 @@ try {
 }
 });
 
-router.get('/getcomment', async (req, res) => {
-const { movie_id } = req.body;
-try {
+router.get('/getcomment/:movie_id', async (req, res) => {
+  const { movie_id } = req.params;
+  try {
     // Retrieve the comments and user IDs from the PostgreSQL database based on the movie ID
     const query = `
-    SELECT c.comment, c.user_id, u.username
-    FROM comments AS c
-    JOIN users AS u ON c.user_id = u.user_id
-    WHERE c.movie_id = $1 and c.reply_id IS NULL
-    ORDER BY created_at ASC
+      SELECT c.comment AS content, c.user_id, u.username
+      FROM comments AS c
+      JOIN users AS u ON c.user_id = u.user_id
+      WHERE c.movie_id = $1 AND c.reply_id IS NULL
+      ORDER BY created_at ASC
     `;
     const values = [movie_id];
 
@@ -345,13 +345,15 @@ try {
     const comments = result.rows;
 
     res.json(comments); // Send the comments as a JSON response
-} catch (error) {
+  } catch (error) {
     console.error('An error occurred while fetching data from the database:', error);
     res.status(500).json({ error: 'An error occurred while processing the request' });
-}
+  }
 });
+
+
   
-router.get('/getreply', async (req, res) => {
+router.get('/getreply/:user_id', async (req, res) => {
   const { reply_id } = req.body;
   try {
     const query = `

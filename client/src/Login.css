@@ -1,13 +1,4 @@
 
-.loginpage {
-  zoom: 1.8;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
-
 .login-logo {
   width: 90px; /* Adjust the width as desired */
   height: auto; /* Maintain the aspect ratio */
@@ -19,76 +10,6 @@
   height: auto; /* Maintain the aspect ratio */
 }
 
-h1.login-heading {
-  font-size: 10rem;
-}
-
-.login-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 400px;
-  padding: 40px;
-  background: linear-gradient(90deg, 
-  rgba(31, 40, 51, 1) -100%,
-  rgba(11, 12, 16, 1) 200%,
-  rgba(31, 40, 51, 1) 0%
-  );
-  box-sizing: border-box;
-  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.6);
-  border-radius: 10px;
-}
-
-.login-box p:first-child {
-  margin: 0 0 30px;
-  padding: 0;
-  color: #fff;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.login-box .user-box {
-  position: relative;
-  width: 100%;
-}
-
-.login-box .user-box input {
-  font-family: "Clash Display Regular";
-  width: 100%;
-  padding: 10px 0;
-  font-size: 16px;
-  color: #C6C6C7;
-  margin-bottom: 30px;
-  border: none;
-  border-bottom: 1px solid #fff;
-  outline: none;
-  background: transparent;
-}
-
-.login-box .user-box label {
-  font-family: "Clash Display Regular";
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: 10px 0;
-  font-size: 16px;
-  color: #fff;
-  opacity: 1;
-  pointer-events: none;
-  transition: 0.5s;
-}
-
-.login-box .user-box input:focus ~ label,
-.login-box .user-box input:valid ~ label {
-  top: -20px;
-  left: 0;
-  color: #fff;
-  font-size: 12px;
-}
-
 .login-box form {
     display: flex;
     flex-direction: column;
@@ -97,6 +18,7 @@ h1.login-heading {
   }
 
   .loginpage {
+    zoom: 1.8;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -170,7 +92,8 @@ h1.login-heading {
     left: 0;
     padding: 10px 0;
     font-size: 16px;
-    color: #fff;
+    opacity: 0.2;
+    color: #75E2FF;
     pointer-events: none;
     transition: 0.5s;
   }
@@ -180,6 +103,7 @@ h1.login-heading {
     top: -30px;
     left: 0;
     color: #75E2FF;
+    opacity: 1;
     font-size: 12px;
   }
   
@@ -203,7 +127,7 @@ h1.login-heading {
       transition: 0.5s;
       margin-top: 0px;
       margin-bottom: 20px;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       background: transparent;
       border: none;
       cursor: pointer;

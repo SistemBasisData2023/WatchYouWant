@@ -101,7 +101,7 @@ const App = () => {
   const fetchFeaturedFilms = async () => {
     try {
       const genreId = 878; // Replace with the desired genre ID (e.g., 878 for Science Fiction)
-      const filmCount = 5; // Number of featured films to fetch
+      const filmCount = 10; // Number of featured films to fetch
       const films = await Promise.all(
         Array.from({ length: filmCount }, () => fetchRandomMovie(genreId))
       );
@@ -166,6 +166,9 @@ const App = () => {
     } catch (error) {
       console.error('Error logging out:', error);
       // Handle error or show an error message
+    }
+    if (!user) {
+      navigate('/');
     }
     setUser(null);
     if (!user) {

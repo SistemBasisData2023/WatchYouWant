@@ -64,6 +64,43 @@
   left: 0;
 }
 
+.avgrating-container {
+  font-size: 4rem;
+  font-family: 'Clash Display Light';
+  text-align: left;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.avgstar{
+  fill: var(--blue);
+  color: #ffd700;
+}
+
+.rating-avg {
+  text-align: center;
+}
+
+.rating-text {
+  font-weight: bold;
+}
+
+.rating-container{
+  font-size: 4rem;
+  font-family: 'Clash Display Light';
+  text-align: center;
+  color: white;
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: normal;
+}
+
+
 .movie-details-container {
   overflow-y: auto;
   max-height: calc(100vh - 400px);
@@ -130,6 +167,13 @@
   flex-direction: column;
   align-items: start;
   margin-bottom: 20px;
+  font-family: 'Clash Display Regular';
+}
+
+.c-placeholder {
+  margin-left: 5rem;
+  margin-bottom: 20px;
+  font-family: 'Clash Display Regular';
 }
 
 .comment {
@@ -138,10 +182,12 @@
   flex-direction: column;
   align-items: start;
   margin-bottom: 20px;
+  
 }
 
 .comment-header {
   display: flex;
+  
   align-items: start;
 }
 
@@ -181,6 +227,9 @@
 }
 
 .comment-form {
+  margin-top: 5rem;
+  font-weight: bold;
+  font-family: 'Clash Display Regular';
   flex-direction: row;
 }
 
@@ -272,4 +321,80 @@
     opacity: 0;
     display: none;
   }
+}
+
+.input-comment {
+  width: 35%;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  line-height: 28px;
+  font-family: 'Clash Display Regular';
+  font-size: 2rem;
+  border: 2px solid transparent;
+  border-bottom-color: #75e2ff;
+  padding: .2rem 0;
+  outline: none;
+  background-color: transparent;
+  color: var(--blue);
+  transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+ }
+ 
+ .input-comment:focus, input:hover {
+  outline: none;
+  border-color: var(--blue);
+ }
+ 
+ .input-comment::placeholder {
+  color: #777;
+ }
+ 
+ .input-comment:focus::placeholder {
+  opacity: 0;
+  transition: opacity .3s;
+ }
+ 
+ .custom-btn {
+  margin-top: 1rem;
+  font-size: 1.5rem;
+  font-family: 'Clash Display Light';
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #75e2ff;
+  padding: 20px 40px;
+  border: 1px solid;
+  border-radius: 1000px;
+  display: inline-block;
+  transition: all 0.2s;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1.8rem;
+}
+
+.custom-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(27, 27, 27, 0.5);
+}
+
+.custom-btn:active {
+  transform: translateY(-3px);
+}
+
+.custom-btn::after {
+  content: "";
+  display: inline-block;
+  height: 100%;
+  width: 100%;
+  border-radius: 100px;
+  top: 0;
+  left: 0;
+  position: absolute;
+  z-index: -1;
+  transition: all 0.3s;
+}
+
+.custom-btn:hover::after {
+  background-color: rgb(0, 238, 255);
+  transform: scaleX(1.4) scaleY(1.5);
+  opacity: 0;
 }

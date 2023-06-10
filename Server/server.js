@@ -41,22 +41,22 @@ db.connect((err)=>{
  
 //middleware (session)
 app.use(
-    session({
-        secret: 'ini contoh secret',
-        saveUninitialized: false,
-        resave: false
-    })
+  session({
+    secret: 'ini contoh secret',
+    saveUninitialized: false,
+    resave: false
+  })
 );
 app.use(bodyParser.json());
 app.use(
-    bodyParser.urlencoded({
-        extended: true
-    })
-);
-app.use(cors({
-    origin: 'http://localhost:3000',
+  bodyParser.urlencoded({
+    extended: true
   })
 );
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 var temp;
  
 router.post('/login', (req, res) => {
@@ -243,9 +243,10 @@ router.get('/getfav/:user_id', async (req, res) => {
       const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
       const movieData = response.data;
 
-      // Extract the desired fields from the movie data
-      const { id, title, release_date, overview, poster_path } = movieData;
-      movies.push({ id, title, release_date, overview, poster_path });
+      // Extract the desired fields from the movie data and include the genre property
+      const { id, title, release_date, overview, poster_path, genres } = movieData;
+      const genreNames = genres.map((genre) => genre.name);
+      movies.push({ id, title, release_date, overview, poster_path, genre: genreNames });
     }
 
     res.json(movies); // Send the filtered movie list as a JSON response
@@ -254,6 +255,7 @@ router.get('/getfav/:user_id', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while processing the request' });
   }
 });
+
 
 
 router.delete('/deletefav', async (req, res) => {
@@ -372,15 +374,14 @@ router.get('/getreply/:user_id', async (req, res) => {
 });
 
 
-router.get('/getrating', async (req, res) => {
-  const { movie_id } = req.body; 
-  temp = req.session;
-  temp.movie_id = movie_id;
+router.get('/getrating/:movie_id', async (req, res) => {
+  const { movie_id } = req.params; 
+
 
   try {
       // Retrieve the average rating from the PostgreSQL database based on the movie ID
       const query = 'SELECT AVG(rating) AS average_rating FROM ratings WHERE movie_id = $1';
-      const values = [temp.movie_id];
+      const values = [movie_id];
 
       const result = await db.query(query, values);
       const averageRating = result.rows[0].average_rating;
@@ -393,33 +394,36 @@ router.get('/getrating', async (req, res) => {
 });
 
 router.post('/addrating', async (req, res) => {
-const { user_id, movie_id, rating } = req.body; 
-temp = req.session;
-temp.user_id = user_id;
-temp.movie_id = movie_id;
-temp.rating = rating;
-try {
-    // Store the rating in the PostgreSQL database
-    const query = 'INSERT INTO ratings (user_id, movie_id, rating) VALUES ($1, $2, $3)';
-    const values = [temp.user_id, temp.movie_id, temp.rating];
-
-    await db.query(query, values);
-
-    res.sendStatus(200); // Send a success status
-} catch (error) {
-    console.error('An error occurred while storing the rating:', error);
-    res.status(500).json({ error: 'An error occurred while processing the request' });
-}
-});
+  const { user_id, movie_id, rating } = req.body; 
+  try {
+      // Check if the rating already exists for the given user_id and movie_id
+      const result = await db.query('SELECT * FROM ratings WHERE user_id = $1 AND movie_id = $2', [user_id, movie_id]);
+      
+      if (result.rows.length > 0) {
+        // If the rating exists, update it
+        await db.query('UPDATE ratings SET rating = $1 WHERE user_id = $2 AND movie_id = $3', [rating, user_id, movie_id]);
+      } else {
+        // If the rating doesn't exist, insert a new row
+        await db.query('INSERT INTO ratings (user_id, movie_id, rating) VALUES ($1, $2, $3)', [user_id, movie_id, rating]);
+      }
+      res.sendStatus(200); // Send a success status
+  } catch (error) {
+      console.error('An error occurred while storing the rating:', error);
+      res.status(500).json({ error: 'An error occurred while processing the request' });
+  }
+  });
   
 //Router 7: mengheapus session
-router.get('/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            return console.log(err);
-        }
-        res.redirect('/');
-    });
+router.post('/logout', (req, res) => {
+  // Destroy the session
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error logging out:', err);
+      res.status(500).send("Error logging out.");
+    } else {
+      res.status(200).send("Logged out successfully.");
+    }
+  });
 });
  
 app.use('/', router);

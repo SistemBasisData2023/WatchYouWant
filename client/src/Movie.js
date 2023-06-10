@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Form, Button } from 'react-bootstrap';
 import './Movie.css';
 import { FaRegUserCircle } from 'react-icons/fa';
+import ReactStars from 'react-rating-stars-component';
 
 const API_KEY = '386cfa223814f4c1798b997fc2e52a5a';
 
@@ -17,6 +18,8 @@ const Movie = ({ user }) => {
   const commentUsername = user.username || 'User';
   const [selectedCommentId, setSelectedCommentId] = useState(null);
   const [replyText, setReplyText] = useState('');
+  const [rating, setRating] = useState(null);
+  const [averageRating, setAverageRating] = useState(null);
 
   const handleSearch = () => {
     if (searchTerm.trim() !== '') {
@@ -25,35 +28,52 @@ const Movie = ({ user }) => {
   };
 
   const handleCheckboxChange = async () => {
-    const movieExists = favoriteMovieIds.includes(id);
-    if (movieExists) {
-      alert('Movie is already in favorites');
-      return;
-    } else {
-      try {
-        const data = {
+    try {
+      const response = await fetch(`http://localhost:3001/getfav/${user.user_id}`);
+      if (response.ok) {
+        const data = await response.json();
+        const fetchedFavoriteMovieIds = data.map((movie) => movie.id);
+        const movieExists = fetchedFavoriteMovieIds.includes(id);
+        if (movieExists) {
+          alert('Movie is already in favorites');
+          return;
+        }
+  
+        const requestData = {
           movie_id: id,
           user_id: user.user_id,
         };
-        const response = await fetch(`http://localhost:3001/addfav`, {
+  
+        const addResponse = await fetch(`http://localhost:3001/addfav`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify(requestData),
         });
-
-        if (response.ok) {
-          alert('Movie successfully added to favorites');
-          setFavoriteMovieIds((prevIds) => [...prevIds, id]);
+  
+        if (addResponse.ok) {
+          // Check if the movie is already in the favoriteMovieIds state
+          if (!favoriteMovieIds.includes(id)) {
+            setFavoriteMovieIds((prevIds) => [...prevIds, id]);
+            alert('Movie successfully added to favorites');
+          } else {
+            alert('Movie is already in favorites');
+          }
         } else {
           alert('Failed adding to favorites');
         }
-      } catch (error) {
-        console.error('Failed adding to favorites:', error);
+      } else {
+        console.error('Error fetching favorites:', response.statusText);
       }
+    } catch (error) {
+      console.error('Error handling favorites:', error);
     }
   };
+  
+  
+  
+  
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -107,13 +127,13 @@ const Movie = ({ user }) => {
     }
   };
 
-  const handleReplySubmit = async (commentId) => {
-    // Add the logic to submit a reply for a specific comment
-    // Send the replyText and commentId to the backend API
+  const handleReplySubmit = async (e, commentId) => {
+    e.preventDefault();
     try {
       const data = {
         replyText,
         commentId,
+        reply_id: selectedCommentId,
       };
       const response = await fetch(`http://localhost:3001/addreply`, {
         method: 'POST',
@@ -132,6 +152,34 @@ const Movie = ({ user }) => {
       }
     } catch (error) {
       console.error('Error posting reply:', error);
+    }
+  };
+
+  const handleRatingChange = (newRating) => {
+    setRating(newRating);
+  };
+  const handleRatingSubmit = async () => {
+    try {
+      const data = {
+        movie_id: id,
+        user_id: user.user_id,
+        rating: rating
+      };
+      const response = await fetch('http://localhost:3001/addrating', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (response.ok) {
+        alert('Rating successfully added');
+      } else {
+        alert('Failed to add rating');
+      }
+    } catch (error) {
+      console.error('Failed to add rating:', error);
     }
   };
 
@@ -220,6 +268,23 @@ const Movie = ({ user }) => {
     fetchUserFavorites();
   }, [user.user_id]);
 
+  useEffect(() => {
+    const fetchAverageRating = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/getrating/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAverageRating(Number(data.averageRating));
+        } else {
+          console.error('Failed to fetch average rating:', response.status);
+        }
+      } catch (error) {
+        console.error('Failed to fetch average rating:', error);
+      }
+    };
+    fetchAverageRating();
+  }, [id]);
+
   
   return (
     <div className="movie-container">
@@ -267,8 +332,22 @@ const Movie = ({ user }) => {
                 </Container>
               )}
             </div>
-          
+            <div className='avgrating-container'>
+              {averageRating ? (
+                <p className="rating-avg">
+                  <span className="rating-text">Average Users Rating</span> <br /> {averageRating.toFixed(2)}{' '}
+                  <span className='avgstar' role="img" aria-label="star">
+                    ★
+                  </span>
+                </p>
+              ) : (
+                <p>Loading average rating...</p>
+              )}
+
+            </div>
+
           <div className="movie-text-container">
+            
             <div className="movie-details">
               <h3>Movie Overview</h3>
               <p className="movie-comp">{movieDetails.overview}</p>
@@ -288,10 +367,25 @@ const Movie = ({ user }) => {
               </div>
             </div>
           </div>
+          <div className="rating-container">
+                <h3 className="rating-heading">Rate this movie</h3>
+                <ReactStars
+                  count={5}
+                  value={rating}
+                  onChange={handleRatingChange}
+                  size={80}
+                  activeColor="#ffd700"
+                />
+                <div>
+                <Button className="custom-btn" variant="primary" onClick={handleRatingSubmit}>
+                Submit Rating
+                </Button>
+              </div>
+        </div>
         <div className="comments">
         <h3 className="comment-top">Comments</h3>
         {comments.length === 0 ? (
-          <p>No comments yet.</p>
+          <p className='c-placeholder'>No comments yet.</p>
         ) : (
           comments.map((comment, index) => (
             <div className="comment" key={index}>
@@ -310,7 +404,7 @@ const Movie = ({ user }) => {
               <div className="reply-section">
                 {selectedCommentId === comment.id ? (
                   <div className="reply-form">
-                    <Form onSubmit={() => handleReplySubmit(comment.id)}>
+                    <Form onSubmit={(e) => handleReplySubmit(e, comment.id)}>
                       <Form.Group controlId="replyForm">
                         <Form.Label>Your Reply</Form.Label>
                         <div>
@@ -322,7 +416,7 @@ const Movie = ({ user }) => {
                           />
                         </div>
                       </Form.Group>
-                      <Button variant="primary" type="submit">
+                      <Button className="custom-btn" variant="primary" type="submit">
                         Post Reply
                       </Button>
                     </Form>
@@ -340,24 +434,26 @@ const Movie = ({ user }) => {
           ))
         )}
 
-        <div className="comment-form">
-          <Form onSubmit={handleCommentSubmit}>
-            <Form.Group controlId="commentForm">
-              <Form.Label>Your Comment</Form.Label>
-              <div>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                />
-              </div>
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              Post Comment
-            </Button>
-          </Form>
-        </div>
+      <div className="comment-form">
+        <Form onSubmit={handleCommentSubmit}>
+          <Form.Group controlId="commentForm">
+            <Form.Label>Your Comment</Form.Label>
+            <div className='comment-input-bar'>
+              <input
+                placeholder="Comment"
+                type="text"
+                className="input-comment"
+                required
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+              />
+            </div>
+          </Form.Group>
+          <Button className="custom-btn" variant="primary" type="submit">
+            Post Comment
+          </Button>
+        </Form>
+      </div>
       </div>
         </>
       ) : (

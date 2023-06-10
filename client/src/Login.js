@@ -27,8 +27,6 @@ const Login = ({ hideTopBar, handleLoginSuccess }) => {
 
       const result = await response.json()
 
-
-      
       if (response.ok) {
         alert('Login successful');
         navigate('/app');
@@ -82,7 +80,7 @@ const Login = ({ hideTopBar, handleLoginSuccess }) => {
             <span></span>
             <span></span>
             <span></span>
-            Submit
+            Login
           </button>
         </form>
         <p>

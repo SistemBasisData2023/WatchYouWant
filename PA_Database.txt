@@ -1,0 +1,61 @@
+ep-throbbing-shape-154266.ap-southeast-1.aws.neon.tech
+WatchYouWant
+basisdatay25
+LBKTf3bXwu9l
+
+
+postgres://basisdatay25:LBKTf3bXwu9l@ep-throbbing-shape-154266.ap-southeast-1.aws.neon.tech/WatchYouWant
+
+
+CREATE TABLE users(
+	User_ID SERIAL PRIMARY KEY,
+	email TEXT UNIQUE NOT NULL,
+ 	Username VARCHAR(20) UNIQUE NOT NULL,
+ 	Password TEXT NOT NULL,
+	Movie_IDs INT[]
+);
+
+SELECT * FROM users
+WHERE movie_ids @> ARRAY[569094] and user_id = 1;
+
+UPDATE users
+SET movie_ids = (
+    SELECT array_agg(DISTINCT movie_id)
+    FROM unnest(movie_ids) AS movie_id
+    WHERE user_id = 1
+)
+WHERE user_id = 1;
+
+INSERT INTO users (username, password, movie_ids) VALUES ('z', 'z123', ARRAY[1, 2, 3, 4]);
+UPDATE users SET movie_ids = array_append(movie_ids, 1) where user_id = 18;
+UPDATE users SET movie_ids = array_remove(movie_ids, 7) where user_id = 1;
+SELECT * FROM users;
+
+CREATE TABLE ratings(
+	User_ID INT, 
+ 	Movie_ID INT,
+	rating NUMERIC,
+ 	UNIQUE (User_ID, Movie_ID)
+);
+SELECT * FROM ratings;
+
+CREATE TABLE comments(
+	Comment_ID SERIAL PRIMARY KEY,
+ 	Comment TEXT NOT NULL,
+ 	User_ID INT NOT NULL,
+	Movie_ID INT NOT NULL,
+	Reply_ID INT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+SELECT * FROM comments;
+
+CREATE TABLE movies(
+	Movie_ID INT PRIMARY KEY,
+ 	Title TEXT NOT NULL,
+	Genre TEXT NOT NULL,
+	Rating INT,
+	release_date DATE NOT NULL
+);
+
+SELECT * FROM movies;
+

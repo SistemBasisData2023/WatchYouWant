@@ -12,24 +12,29 @@
   flex-direction: row;
   justify-content: center;
   padding: 20px;
-  margin-bottom: 5rem;
 }
 
 .fav-icon {
   display: flex;
-  align-items: end;
-  margin-left: auto;
-  margin-top: 1rem;
+  align-items: flex-start; /* Updated alignment */
   margin-right: 2%;
+  margin-top: 1rem; /* Adjusted margin top */
+}
+
+.title-wrapper {
+  display: flex;
+  margin-top: 2rem;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
 }
 
 .movie-title {
-  position: absolute;
   font-size: 6rem;
-  padding: 15px;
   font-family: 'Clash Display Semibold';
   text-align: center;
   color: white;
+  margin-left: 5%;
 }
 
 .movie-media {
@@ -68,7 +73,7 @@
   font-size: 4rem;
   font-family: 'Clash Display Light';
   text-align: left;
-  margin-top: 20px;
+  margin-top: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -128,7 +133,7 @@
 
 .additional-details {
   display: flex;
-  margin-top: 15px;
+  margin-top: 30px;
   font-size: 4rem;
   font-family: 'Clash Display Light';
   text-align: left;
@@ -136,17 +141,17 @@
 }
 
 .release-date,
-.cast-list {
+.cast-list, .genre {
   margin-right: 100px;
 }
 
 .release-date h3,
-.cast-list h3 {
+.cast-list h3, .genre h3 {
   margin-bottom: 10px;
 }
 
 .release-date p,
-.cast-list ul {
+.cast-list ul, .genre ul {
   padding: 10px;
   text-align: justify;
   font-size: 2.5rem;

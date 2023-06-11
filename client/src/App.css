@@ -26,6 +26,7 @@ body {
   background: #0B0C10;
   min-zoom: 100%;
   max-zoom: 100%;
+  margin-bottom: 2rem;
 }
 
 body::-webkit-scrollbar {
@@ -67,23 +68,22 @@ body::-webkit-scrollbar-track {
 }
 
 .logo-image {
-  width: 90px; /* Adjust the width as desired */
-  height: auto; /* Maintain the aspect ratio */
-  display: flex;
+  width: 100px;
+  height: auto; 
   align-items: center;
 }
 
 .logo-img {
-  width: 110px; /* Adjust the width as desired */
-  height: auto; /* Maintain the aspect ratio */
-
+  width: 120px; 
+  height: auto; 
+  margin-top: 15px;
 }
 
 .h1-container {
   display: flex;
   align-items: center;
   flex-grow: 1;
-  justify-content: center; /* Add this line to center the heading */
+  justify-content: center;
 }
 
 .home-title {
@@ -94,8 +94,8 @@ body::-webkit-scrollbar-track {
   background: #75e2ff;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-align: center; /* Add this line to center the text horizontally */
-  line-height: 1; /* Add this line to reduce the line height */
+  text-align: center;
+  line-height: 1; 
 }
 
 .home-welcome {
@@ -104,8 +104,8 @@ body::-webkit-scrollbar-track {
   font-size: 2rem;
   color: #75e2ff;
   white-space: nowrap;
-  text-align: center; /* Add this line to center the text horizontally */
-  margin-top: 0.5rem; /* Adjust the margin as desired */
+  text-align: center; 
+  margin-top: 0.5rem; 
 }
 
 .navbar {
@@ -185,7 +185,7 @@ body::-webkit-scrollbar-track {
 .carousel-container {
   position: relative;
   width: 100%;
-  height: 1000px; /* Add this line to adjust the stacking order */
+  height: 1100px; 
   overflow: hidden;
 }
 
@@ -228,7 +228,7 @@ body::-webkit-scrollbar-track {
 
 .movie-banner {
   width: 100%;
-  height: 1000px; /* Adjust the height as per your requirements */
+  height: 1100px;
   background-position: center;
   background-size: cover;
   position: absolute;
@@ -266,24 +266,10 @@ body::-webkit-scrollbar-track {
   color: white;
   font-size: 8rem;
   text-align: left;
-  margin-left: 15px; /* Remove the left margin */
+  margin-left: 15px;
   text-decoration: none; 
 }
 
-
-.movie-banner .btn {
-  padding: 12px 24px;
-  background-color: #fff;
-  color: #000;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-}
-
-.movie-banner .btn:hover {
-  background-color: #eaeaea;
-}
 
 .section-text-container {
   display: flex;
@@ -309,7 +295,7 @@ body::-webkit-scrollbar-track {
 
 .search-results {
   font-size: 2rem;
-  color: white; /* Add margin-left to align the text to the left */
+  color: white; 
   justify-content: center;
   align-items: center;
 }
@@ -330,39 +316,40 @@ body::-webkit-scrollbar-track {
   margin-left: 1rem;
   size: 800px;
   display: flex;
-  overflow-x: auto; /* Set overflow-x to 'auto' to enable horizontal scrolling */
+  overflow-x: auto; 
   padding-bottom: 1rem;
   scrollbar-width: thin;
   scrollbar-color: #45A29E #1f2833;
-  width: calc(100% - 2rem); /* Adjust the width to fit the available space */
+  width: calc(100% - 2rem); 
   white-space: nowrap;
-  position: relative; /* Add relative positioning */
+  position: relative; 
 }
 
 .container::-webkit-scrollbar {
-  height: 8px; /* Set the height of the scrollbar */
+  height: 8px; 
 }
 
 .container::-webkit-scrollbar-thumb {
-  background-color: #45A29E; /* Set the color of the scrollbar thumb */
-  border-radius: 4px; /* Add border radius to the thumb */
+  background-color: #45A29E; 
+  border-radius: 4px;
 }
 
 .container::-webkit-scrollbar-track {
-  background-color: #1f2833; /* Set the color of the scrollbar track */
+  background-color: #1f2833;
 }
 
 .movie {
-  flex: 0 0 310px; /* Add flex property to maintain fixed width */
+  zoom: 1.4;
+  flex: 0 0 310px;
   height: 460px;
-  margin: 0 0.5rem; /* Add some margin between movie cards */
+  margin: 0 0.5rem;
   justify-content: center;
   align-items: center;
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   border: none;
-  scroll-snap-align: start; /* Enable snap scrolling */
+  scroll-snap-align: start; 
 }
 
 .movie div:nth-of-type(1) {
@@ -413,7 +400,9 @@ body::-webkit-scrollbar-track {
 .movie div:nth-of-type(3) h3 {
   margin-top: 5px;
   font-family: "Clash Display Light";
+  font-weight: bold;
   color: white;
+  letter-spacing: 1px;
   cursor: default;
   white-space: nowrap; 
 }

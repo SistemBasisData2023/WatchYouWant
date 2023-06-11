@@ -1,7 +1,7 @@
 .user-container {
     margin: 0 auto;
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     padding: 20px;
     color:white;
     zoom: 2;
@@ -42,6 +42,11 @@
     color: #888;
   }
   
+  .status {
+    margin-left: 10px;
+    margin-bottom: 20px;
+  }
+
   .user-stats {
     display: flex;
     margin-bottom: 20px;
@@ -55,7 +60,7 @@
 
   .fav-movies-count{
     font-family: "Clash Display Regular";
-    margin-left: 10px;
+    margin-left: 50px;
   }
   
   .stat {
@@ -77,28 +82,35 @@
   }
 
   .fav-container {
+    zoom: 0.8;
     margin-top: 1rem;
     margin-left: 1rem;
     size: 500px;
     display: flex;
-    overflow-x: auto; /* Set overflow-x to 'auto' to enable horizontal scrolling */
+    overflow-x: auto; 
     padding-bottom: 1rem;
     scrollbar-width: thin;
     scrollbar-color: #45A29E #1f2833;
-    width: calc(100% - 2rem); /* Adjust the width to fit the available space */
+    width: calc(100% - 2rem); 
     white-space: nowrap;
-    position: relative; /* Add relative positioning */
+    position: relative; 
   }
   
   .fav-container::-webkit-scrollbar {
-    height: 8px; /* Set the height of the scrollbar */
+    height: 8px; 
   }
   
   .fav-container::-webkit-scrollbar-thumb {
-    background-color: #45A29E; /* Set the color of the scrollbar thumb */
-    border-radius: 4px; /* Add border radius to the thumb */
+    background-color: #45A29E; 
+    border-radius: 4px; 
   }
   
   .fav-container::-webkit-scrollbar-track {
-    background-color: #1f2833; /* Set the color of the scrollbar track */
+    background-color: #1f2833; 
+  }
+
+  .checkfav-text{
+    font-size: 2rem;
+    margin-left: 30px;
+    font-family: "Clash Display Light";
   }

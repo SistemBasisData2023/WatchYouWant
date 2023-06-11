@@ -201,61 +201,97 @@ router.get('/getmovie', async (req, res) => {
 
 
 router.post('/addfav', async (req, res) => {
-    const {movie_id, user_id} = req.body;
-    temp = req.session;
-    temp.movie_ID = movie_id;
-    temp.user_ID = user_id;
-    
-    // Make a GET request to OMDB API to fetch movie details
-    try {
-        const response = await axios.get(`https://api.themoviedb.org/3/movie/${temp.movie_ID}?api_key=7c020dc3c50fdb639f81999630743ff1`);
-        const movie = response.data;
-    
-        // Insert the movie data into the PostgreSQL database
-        
-        const query = `UPDATE users SET movie_ids = array_append(movie_ids, ${temp.movie_ID}) where user_id = ${temp.user_ID};`;
-    
-        await db.query(query);
-        res.send(`${movie.title} ditambahkan ke favorit`);
-    } catch (error) {
-        console.error('An error occurred while fetching data from OMDB API or inserting into the database:', error);
-        res.status(500).json({ error: 'An error occurred while processing the request' });
+  const { movie_id, user_id } = req.body;
+
+  try {
+    const selectQuery = 'SELECT movie_ids FROM users WHERE user_id = $1';
+    const selectValues = [user_id];
+    const selectResult = await db.query(selectQuery, selectValues);
+
+    if (selectResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
     }
+
+    const movieIds = selectResult.rows[0].movie_ids || [];
+
+    // If the user has no favorite movie list, directly add the movie_id
+    if (movieIds.length === 0) {
+      const updateQuery = `
+        UPDATE users
+        SET movie_ids = ARRAY[$1]::integer[]
+        WHERE user_id = $2
+      `;
+      const updateValues = [movie_id, user_id];
+      const updateResult = await db.query(updateQuery, updateValues);
+
+      if (updateResult.rowCount === 0) {
+        return res.status(400).json({ error: 'Failed to add the movie to favorites' });
+      }
+
+      return res.status(200).json({ message: 'Movie successfully added to favorites' });
+    }
+
+    // Check if the movie is already in the user's favorite list
+    if (movieIds.includes(parseInt(movie_id))) {
+      return res.status(400).json({ error: 'Movie is already in favorites' });
+    }
+
+    const updateQuery = `
+      UPDATE users
+      SET movie_ids = array_append(movie_ids, $1::integer)
+      WHERE user_id = $2
+    `;
+    const updateValues = [movie_id, user_id];
+    const updateResult = await db.query(updateQuery, updateValues);
+
+    if (updateResult.rowCount === 0) {
+      return res.status(400).json({ error: 'Failed to add the movie to favorites' });
+    }
+
+    res.status(200).json({ message: 'Movie successfully added to favorites' });
+  } catch (error) {
+    console.error('An error occurred while updating the favorite movies:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request' });
+  }
 });
+
+
+
 
 router.get('/getfav/:user_id', async (req, res) => {
   const { user_id } = req.params;
   try {
-    // Retrieve the IMDb IDs associated with the user from the PostgreSQL database
     const query = 'SELECT movie_ids FROM users WHERE user_id = $1';
     const values = [user_id];
     const result = await db.query(query, values);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'No favorite movies found' });
-    }
+      return res.status(200).json([]);
+    }    
 
-    const movie_IDs = result.rows[0].movie_ids;
+    const movieIDs = result.rows[0].movie_ids;
 
-    // Fetch movie data from the TMDB API for each IMDb ID and extract the desired fields
+    if (!Array.isArray(movieIDs) || movieIDs.length === 0 || movieIDs === null) {
+      return res.status(200).json([]);
+    }    
+
     const movies = [];
-    for (const movie_id of movie_IDs) {
-      const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
+
+    for (const movieID of movieIDs) {
+      const response = await axios.get(`https://api.themoviedb.org/3/movie/${movieID}?api_key=${API_KEY}`);
       const movieData = response.data;
 
-      // Extract the desired fields from the movie data and include the genre property
       const { id, title, release_date, overview, poster_path, genres } = movieData;
       const genreNames = genres.map((genre) => genre.name);
       movies.push({ id, title, release_date, overview, poster_path, genre: genreNames });
     }
 
-    res.json(movies); // Send the filtered movie list as a JSON response
+    res.json(movies);
   } catch (error) {
     console.error('An error occurred while fetching data from the database or TMDB API:', error);
     res.status(500).json({ error: 'An error occurred while processing the request' });
   }
 });
-
 
 
 router.delete('/deletefav', async (req, res) => {
@@ -294,24 +330,6 @@ try {
     res.status(500).json({ error: 'An error occurred while processing the request' });
 }
 });
-
-router.post('/addreply', async (req, res) => {
-    const { movie_id, user_id, comment, reply_id} = req.body; // Get the movie ID, user ID, and comment from the request body
-    
-    try {
-        // Insert the comment into the PostgreSQL database
-        const response = await axios.get(`https://api.themoviedb.org/3/movie/${movie_id}?api_key=7c020dc3c50fdb639f81999630743ff1`);
-        const movie = response.data;
-        const query = 'INSERT INTO comments (comment, user_id, movie_id, reply_id) VALUES ($1, $2, $3, $4)';
-        const values = [comment, user_id, movie_id, reply_id];
-    
-        await db.query(query, values);
-        res.send(`komen pada ${movie.title} berhasil ditambahkan`);
-    } catch (error) {
-        console.error('An error occurred while inserting the comment into the database:', error);
-        res.status(500).json({ error: 'An error occurred while processing the request' });
-    }
-    });
 
 router.delete('/deletecomment', async (req, res) => {
 const { comment_id } = req.body; // Get the movie ID, user ID, and comment from the request body
@@ -354,29 +372,9 @@ router.get('/getcomment/:movie_id', async (req, res) => {
 });
 
 
-  
-router.get('/getreply/:user_id', async (req, res) => {
-  const { reply_id } = req.body;
-  try {
-    const query = `
-    SELECT c.comment, c.user_id, u.username
-    FROM comments AS c
-    JOIN users AS u ON c.user_id = u.user_id
-    WHERE reply_id = '${reply_id}' ORDER BY created_at ASC`;
-
-    const result = await db.query(query);
-    const comments = result.rows;
-    res.json(comments); // Send the comments as a JSON response
- 
-  } catch (error) {
-    console.error('Error retrieving comments:', error);
-  }
-});
-
 
 router.get('/getrating/:movie_id', async (req, res) => {
   const { movie_id } = req.params; 
-
 
   try {
       // Retrieve the average rating from the PostgreSQL database based on the movie ID

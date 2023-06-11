@@ -16,10 +16,9 @@ const Movie = ({ user }) => {
   const { id } = useParams();
   const [favoriteMovieIds, setFavoriteMovieIds] = useState([]);
   const commentUsername = user.username || 'User';
-  const [selectedCommentId, setSelectedCommentId] = useState(null);
-  const [replyText, setReplyText] = useState('');
   const [rating, setRating] = useState(null);
   const [averageRating, setAverageRating] = useState(null);
+  const [movieGenre, setMovieGenre] = useState(null);
 
   const handleSearch = () => {
     if (searchTerm.trim() !== '') {
@@ -32,11 +31,13 @@ const Movie = ({ user }) => {
       const response = await fetch(`http://localhost:3001/getfav/${user.user_id}`);
       if (response.ok) {
         const data = await response.json();
-        const fetchedFavoriteMovieIds = data.map((movie) => movie.id);
-        const movieExists = fetchedFavoriteMovieIds.includes(id);
-        if (movieExists) {
-          alert('Movie is already in favorites');
-          return;
+        if (data.length > 0) {
+          const fetchedFavoriteMovieIds = data.map((movie) => movie.id);
+          const movieExists = fetchedFavoriteMovieIds.includes(id);
+          if (movieExists) {
+            alert('Movie is already in favorites');
+            return;
+          }
         }
   
         const requestData = {
@@ -53,7 +54,6 @@ const Movie = ({ user }) => {
         });
   
         if (addResponse.ok) {
-          // Check if the movie is already in the favoriteMovieIds state
           if (!favoriteMovieIds.includes(id)) {
             setFavoriteMovieIds((prevIds) => [...prevIds, id]);
             alert('Movie successfully added to favorites');
@@ -72,9 +72,6 @@ const Movie = ({ user }) => {
   };
   
   
-  
-  
-
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (commentText.trim() !== '') {
@@ -127,37 +124,10 @@ const Movie = ({ user }) => {
     }
   };
 
-  const handleReplySubmit = async (e, commentId) => {
-    e.preventDefault();
-    try {
-      const data = {
-        replyText,
-        commentId,
-        reply_id: selectedCommentId,
-      };
-      const response = await fetch(`http://localhost:3001/addreply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (response.ok) {
-        // Reply posted successfully, update the comments
-        fetchComments();
-        setSelectedCommentId(null);
-        setReplyText('');
-      } else {
-        console.error('Error posting reply:', response.statusText);
-      }
-    } catch (error) {
-      console.error('Error posting reply:', error);
-    }
-  };
-
   const handleRatingChange = (newRating) => {
     setRating(newRating);
   };
+
   const handleRatingSubmit = async () => {
     try {
       const data = {
@@ -175,6 +145,7 @@ const Movie = ({ user }) => {
   
       if (response.ok) {
         alert('Rating successfully added');
+        window.location.reload();
       } else {
         alert('Failed to add rating');
       }
@@ -194,6 +165,15 @@ const Movie = ({ user }) => {
         const response = await fetch(movieUrl);
         const data = await response.json();
         setMovieDetails(data);
+
+        const genreUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`;
+        const genreResponse = await fetch(genreUrl);
+        const genreData = await genreResponse.json();
+        const genreMap = {};
+        genreData.genres.forEach((genre) => {
+          genreMap[genre.id] = genre.name;
+        });
+        setMovieGenre(genreMap);
       } catch (error) {
         console.error('Error fetching movie details:', error);
         setMovieDetails(null);
@@ -202,6 +182,8 @@ const Movie = ({ user }) => {
 
     fetchMovieDetails();
   }, [id]);
+
+  
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -253,7 +235,7 @@ const Movie = ({ user }) => {
       try {
         const response = await fetch(`http://localhost:3001/getfav/${user.user_id}`);
         const data = await response.json();
-
+  
         if (response.ok) {
           const favoriteMovieIds = data.map((movie) => movie.id);
           setFavoriteMovieIds(favoriteMovieIds);
@@ -264,9 +246,10 @@ const Movie = ({ user }) => {
         console.error('Error fetching favorites:', error);
       }
     };
-
+  
     fetchUserFavorites();
   }, [user.user_id]);
+  
 
   useEffect(() => {
     const fetchAverageRating = async () => {
@@ -291,8 +274,10 @@ const Movie = ({ user }) => {
       {movieDetails ? (
         <>
           <div className="movie-header">
+          <div className="title-wrapper">
             <h2 className="movie-title">{movieDetails.title}</h2>
-            <div className="fav-icon">
+          </div>
+          <div className="fav-icon">
               <label className="con-fav">
                 <input type="checkbox" className="fav" onChange={handleCheckboxChange} checked={favoriteMovieIds.includes(id)} />
                 <div className="checkmark">
@@ -341,31 +326,36 @@ const Movie = ({ user }) => {
                   </span>
                 </p>
               ) : (
-                <p>Loading average rating...</p>
+                <p>{averageRating !== null ? 'No User Rating Available!' : 'Loading average rating...'}</p>
               )}
-
             </div>
-
           <div className="movie-text-container">
-            
-            <div className="movie-details">
-              <h3>Movie Overview</h3>
-              <p className="movie-comp">{movieDetails.overview}</p>
-              <div className="additional-details">
-                <div className="release-date">
-                  <h3>Release Date</h3>
-                  <p className="movie-comp">{movieDetails.release_date}</p>
-                </div>
-                <div className="cast-list">
-                  <h3>Cast</h3>
-                  <ul className="movie-comp">
-                    {movieDetails.credits?.cast.slice(0, 5).map((cast) => (
-                      <li key={cast.id}>{cast.name}</li>
-                    ))}
-                  </ul>
-                </div>
+          <div className="movie-details">
+            <h3>Movie Overview</h3>
+            <p className="movie-comp">{movieDetails.overview}</p>
+            <div className="additional-details">
+              <div className="release-date">
+                <h3>Release Date</h3>
+                <p className="movie-comp">{movieDetails.release_date}</p>
+              </div>
+              <div className="cast-list">
+                <h3>Cast</h3>
+                <ul className="movie-comp">
+                  {movieDetails.credits?.cast.slice(0, 5).map((cast) => (
+                    <li key={cast.id}>{cast.name}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="genre">
+                <h3>Genre</h3>
+                <ul className="movie-comp">
+                  {movieDetails.genres.map((genre) => (
+                    <li key={genre.id}>{genre.name}</li>
+                  ))}
+                </ul>
               </div>
             </div>
+          </div>
           </div>
           <div className="rating-container">
                 <h3 className="rating-heading">Rate this movie</h3>
@@ -380,8 +370,8 @@ const Movie = ({ user }) => {
                 <Button className="custom-btn" variant="primary" onClick={handleRatingSubmit}>
                 Submit Rating
                 </Button>
-              </div>
-        </div>
+                </div>
+          </div>
         <div className="comments">
         <h3 className="comment-top">Comments</h3>
         {comments.length === 0 ? (
@@ -400,40 +390,9 @@ const Movie = ({ user }) => {
                 <span className="comment-date">Posted on: {comment.date}</span>
               </div>
 
-              {/* Reply section */}
-              <div className="reply-section">
-                {selectedCommentId === comment.id ? (
-                  <div className="reply-form">
-                    <Form onSubmit={(e) => handleReplySubmit(e, comment.id)}>
-                      <Form.Group controlId="replyForm">
-                        <Form.Label>Your Reply</Form.Label>
-                        <div>
-                          <Form.Control
-                            as="textarea"
-                            rows={3}
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                          />
-                        </div>
-                      </Form.Group>
-                      <Button className="custom-btn" variant="primary" type="submit">
-                        Post Reply
-                      </Button>
-                    </Form>
-                  </div>
-                ) : (
-                  <button
-                    className="reply-button"
-                    onClick={() => setSelectedCommentId(comment.id)}
-                  >
-                    Reply
-                  </button>
-                )}
-              </div>
             </div>
           ))
         )}
-
       <div className="comment-form">
         <Form onSubmit={handleCommentSubmit}>
           <Form.Group controlId="commentForm">

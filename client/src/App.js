@@ -100,8 +100,8 @@ const App = () => {
 
   const fetchFeaturedFilms = async () => {
     try {
-      const genreId = 878; // Replace with the desired genre ID (e.g., 878 for Science Fiction)
-      const filmCount = 10; // Number of featured films to fetch
+      const genreId = 878; // Genre : Sci-fi
+      const filmCount = 10; 
       const films = await Promise.all(
         Array.from({ length: filmCount }, () => fetchRandomMovie(genreId))
       );
@@ -130,6 +130,7 @@ const App = () => {
     fetchFeaturedFilms();
     setSearchTerm('');
     fetchMovies();
+    checkUserLoggedIn(); 
   }, []);
 
   const handleHomeClick = () => {
@@ -149,39 +150,28 @@ const App = () => {
     navigate('/user');
   };
 
+  const checkUserLoggedIn = () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setUsername(parsedUser.username);
+      setEmail(parsedUser.email);
+    }
+  };
+
   const handleLogoutClick = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/logout', {
-        method: 'GET',
-        credentials: 'include',
-      });
-  
-      if (response.status === 200) {
-        // Logout successful, navigate to the login page or any other desired page
-        navigate('/');
-      } else {
-        console.error('Failed to logout');
-        // Handle error or show an error message
-      }
-    } catch (error) {
-      console.error('Error logging out:', error);
-      // Handle error or show an error message
-    }
-    if (!user) {
-      navigate('/');
-    }
-    setUser(null);
-    if (!user) {
-      navigate('/');
-    }
+    localStorage.removeItem('user');
+    navigate('/');
   };
 
   const handleLoginSuccess = (result) => {
     console.log(result.username);
     console.log(result.user_id);
+    setUser(result);
     setUsername(result.username);
     setEmail(result.email);
-    setUser(result);
+    localStorage.setItem('user', JSON.stringify(result));
   };
 
   const handleNextFilm = () => {
@@ -220,10 +210,10 @@ const App = () => {
             </h1>
           </div>
           <div className="topbar-icon" onClick={handleProfileClick}>
-            <FaUserCircle size={40} />
+            <FaUserCircle size={50} />
           </div>
           <div className="topbar-icon" onClick={handleLogoutClick}>
-            <TbLogout size={40} />
+            <TbLogout size={50} />
           </div>
         </div>
       )}

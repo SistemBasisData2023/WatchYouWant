@@ -29,50 +29,49 @@ const User = ({ user, username, email }) => {
           'Content-Type': 'application/json',
         },
       });
-
+  
       const movies = await response.json();
       console.log(movies);
-
-      setFavoriteMovies(movies);
-      setFavoriteMoviesCount(movies.length);
+  
+      if (Array.isArray(movies)) {
+        setFavoriteMovies(movies);
+        setFavoriteMoviesCount(movies.length);
+      } else {
+        setFavoriteMovies([]);
+        setFavoriteMoviesCount(0);
+      }
     } catch (error) {
       console.error('Error fetching favorite movies:', error);
       setFavoriteMovies([]);
       setFavoriteMoviesCount(0);
     }
   };
-
-const getFavoriteGenre = () => {
-  const moviesByGenre = groupBy(favoriteMovies, 'genre');
-  console.log(moviesByGenre);
-
-  const genreCounts = Object.entries(moviesByGenre).map(([genre, movies]) => {
-    const genres = genre.split(',');
-    return genres.map((genre) => genre.trim());
-  });
-
-  const flattenedGenres = genreCounts.flat();
-
-  if (flattenedGenres.length === 0) {
-    console.log('No favorite genres found');
-    return '';
-  }
-
-  const genreCountMap = flattenedGenres.reduce((countMap, genre) => {
-    countMap[genre] = (countMap[genre] || 0) + 1;
-    return countMap;
-  }, {});
-
-  const topGenre = Object.keys(genreCountMap).reduce((a, b) => {
-    return genreCountMap[a] > genreCountMap[b] ? a : b;
-  });
-
-  console.log('Top Genre:', topGenre);
-
-  return topGenre;
-};
-
   
+
+  const getFavoriteGenre = () => {
+    if (favoriteMovies.length === 0) {
+      console.log('No favorite genres found');
+      return '';
+    }
+  
+    const genreCountMap = favoriteMovies.reduce((countMap, movie) => {
+      const genres = movie.genre;
+      if (genres && Array.isArray(genres)) {
+        for (const genre of genres) {
+          countMap[genre] = (countMap[genre] || 0) + 1;
+        }
+      }
+      return countMap;
+    }, {});
+  
+    const topGenre = Object.keys(genreCountMap).reduce((a, b) => {
+      return genreCountMap[a] > genreCountMap[b] ? a : b;
+    });
+  
+    console.log('Top Genre:', topGenre);
+  
+    return topGenre || '-';
+  };
   
 
   const deleteFavoriteMovie = async (movieId) => {
@@ -92,7 +91,6 @@ const getFavoriteGenre = () => {
       const result = await response.text();
       console.log(result);
 
-      // Fetch the updated favorite movies after deleting a movie
       fetchFavoriteMovies();
     } catch (error) {
       console.error('Error deleting favorite movie:', error);
@@ -111,39 +109,45 @@ const getFavoriteGenre = () => {
         </div>
       </div>
       <div className="user-stats">
-        <div className="fav-genre">
+      <div className="fav-genre">
           <h2>Favorite genre</h2>
-          <span className="genre-user">{favoriteGenre}</span>
+          <span className="genre-user">{favoriteGenre || '-'}</span>
         </div>
         <div className="fav-movies-count">
-          <h2>Favorite Movies Count</h2>
+          <h2>Favorite Movie Tally</h2>
           <span className="genre-user">{favoriteMoviesCount}</span>
         </div>
       </div>
       <div className="favorite-movies">
         <h2 className="section-text">Favorite Movies</h2>
         <div className="fav-container">
-        {favoriteMovies.map((movie) => {
-          // Update the favorite genre whenever a movie is loaded
-          if (movie.genre && typeof movie.genre === 'string') {
-            const genre = movie.genre.split(',')[0].trim();
-            if (genre && favoriteGenre !== genre) {
-              setFavoriteGenre(genre);
-            }
-          }
-            
-            return (
-              <MovieCard
-                movie={movie}
-                key={movie.id}
-                onDelete={() => deleteFavoriteMovie(movie.id)}
-              />
-            );
-          })}
+          {favoriteMovies.length > 0 ? (
+            favoriteMovies.map((movie) => {
+              if (movie.genre && typeof movie.genre === 'string') {
+                const genre = movie.genre.split(',')[0].trim();
+                if (genre && favoriteGenre !== genre) {
+                  setFavoriteGenre(genre);
+                }
+              }
+              return (
+                <MovieCard
+                  movie={movie}
+                  key={movie.id}
+                  onDelete={() => deleteFavoriteMovie(movie.id)}
+                />
+              );
+            })
+          ) : (
+            <div>
+            <p className="checkfav-text">No Favorite Movies Found! </p> 
+            <br />
+            <p className="checkfav-text">Explore and Add Your Favourite Movies!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  );
+  ); 
 };
 
 export default User;
